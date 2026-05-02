@@ -2,6 +2,7 @@ plugins {
     id("java")
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.openapi.generator") version "7.10.0"
 
 }
 
@@ -31,6 +32,9 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-impl:${jwtVersion}")
     implementation("io.jsonwebtoken:jjwt-jackson:${jwtVersion}")
 
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.25")
+
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
@@ -39,6 +43,53 @@ dependencies {
 
 //    testImplementation(platform("org.junit:junit-bom:5.10.0"))
 //    testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+val openApiSpec = "$projectDir/src/main/resources/api.yaml"
+val openApiGeneratedDir: String = layout.buildDirectory.dir("generated").get().asFile.absolutePath
+
+openApiGenerate {
+    inputSpec.set(openApiSpec)
+    outputDir.set(openApiGeneratedDir)
+    generatorName.set("spring")
+    modelPackage.set("kfu.itis.api.generated.dto")
+    apiPackage.set("kfu.itis.api.generated.api")
+
+    configOptions.set(
+        mapOf(
+            "useJakartaEe" to "true",
+            "useSpringBoot3" to "true",
+            "library" to "spring-boot",
+            "interfaceOnly" to "true",
+            "skipDefaultInterface" to "true",
+            "useBeanValidation" to "true",
+            "useTags" to "true",
+            "dateLibrary" to "java8",
+            "openApiNullable" to "false",
+            "documentationProvider" to "none",
+            "useResponseEntity" to "true"
+        )
+    )
+    additionalProperties.set(
+        mapOf(
+            "generateApiTests" to "false",
+            "generateModelTests" to "false",
+            "generateApiDocumentation" to "false",
+            "generateModelDocumentation" to "false"
+        )
+    )
+}
+
+sourceSets {
+    getByName("main") {
+        java {
+            srcDir(layout.buildDirectory.dir("generated/src/main/java"))
+        }
+    }
+}
+
+tasks.named("compileJava") {
+    dependsOn("openApiGenerate")
 }
 
 tasks.test {
