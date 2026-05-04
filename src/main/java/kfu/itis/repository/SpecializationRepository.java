@@ -1,6 +1,6 @@
 package kfu.itis.repository;
 
-import kfu.itis.entity.Specialization;
+import kfu.itis.model.entity.Specialization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

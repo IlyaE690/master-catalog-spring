@@ -1,6 +1,6 @@
 package kfu.itis.service;
 
-import kfu.itis.entity.Specialization;
+import kfu.itis.model.entity.Specialization;
 
 import java.math.BigDecimal;
 import java.util.List;

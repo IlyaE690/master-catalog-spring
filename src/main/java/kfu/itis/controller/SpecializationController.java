@@ -4,7 +4,7 @@ import kfu.itis.api.generated.api.SpecializationApi;
 import kfu.itis.api.generated.dto.CreateSpecializationRequest;
 import kfu.itis.api.generated.dto.SpecializationResponse;
 import kfu.itis.api.generated.dto.UpdateSpecializationRequest;
-import kfu.itis.entity.Specialization;
+import kfu.itis.model.entity.Specialization;
 import kfu.itis.service.SpecializationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,7 @@
-package kfu.itis.entity;
+package kfu.itis.model.entity;
 
 import jakarta.persistence.*;
+import kfu.itis.model.enums.Role;
 import lombok.*;
 
 import java.time.LocalDateTime;

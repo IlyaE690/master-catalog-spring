@@ -1,6 +1,6 @@
 package kfu.itis.service.impl;
 
-import kfu.itis.entity.Specialization;
+import kfu.itis.model.entity.Specialization;
 import kfu.itis.repository.SpecializationRepository;
 import kfu.itis.service.SpecializationService;
 import org.springframework.stereotype.Service;

@@ -1,9 +1,7 @@
-package kfu.itis.entity;
+package kfu.itis.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "favorite_masters")
