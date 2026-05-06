@@ -18,5 +18,4 @@ public interface SpecializationService {
 
     boolean delete(Long id);
 
-    boolean existsByName(String name);
 }

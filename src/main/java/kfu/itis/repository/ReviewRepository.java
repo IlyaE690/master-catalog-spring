@@ -1,3 +1,4 @@
+// ReviewRepository.java
 package kfu.itis.repository;
 
 import kfu.itis.model.entity.Order;
@@ -10,11 +11,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ReviewRepository extends JpaRepository<Review,Long> {
+public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Optional<Review> findByOrder(Order order);
 
-    List<Review> findByTargetUser(User targetUser);
+    List<Review> findByTargetUserOrderByCreatedAtDesc(User targetUser);
 
-    List<Review> findByAuthor(User author);
+    List<Review> findByAuthorOrderByCreatedAtDesc(User author);
+
 }

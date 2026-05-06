@@ -1,5 +1,6 @@
 package kfu.itis.service;
 
+import kfu.itis.model.entity.Specialization;
 import kfu.itis.model.entity.User;
 import kfu.itis.model.enums.Role;
 
@@ -14,9 +15,7 @@ public interface UserService {
 
     Optional<User> findByEmail(String email);
 
-    List<User> findByRole(Role role);
-
-    List<User> findAllMasters();
+    List<User> findAllMastersBySpecialization(Specialization specialization);
 
     boolean existsByUsername(String username);
 

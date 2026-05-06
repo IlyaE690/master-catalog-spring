@@ -1,3 +1,4 @@
+// NotificationRepository.java
 package kfu.itis.repository;
 
 import kfu.itis.model.entity.Notification;
@@ -8,8 +9,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification,Long> {
+public interface NotificationRepository extends JpaRepository<Notification, Long> {
+    // all
     List<Notification> findByUserOrderByCreatedAtDesc(User user);
-
-    List<Notification> findByUserAndIsReadFalse(User user);
+    // unread
+    List<Notification> findByUserAndIsReadFalseOrderByCreatedAtDesc(User user);
 }

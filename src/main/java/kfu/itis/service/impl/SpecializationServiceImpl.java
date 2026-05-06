@@ -64,9 +64,4 @@ public class SpecializationServiceImpl implements SpecializationService {
         return true;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsByName(String name) {
-        return specializationRepository.existsByName(name);
-    }
 }
