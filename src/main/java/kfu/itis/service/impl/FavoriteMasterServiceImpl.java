@@ -5,9 +5,9 @@ import kfu.itis.model.entity.User;
 import kfu.itis.repository.FavoriteMasterRepository;
 import kfu.itis.service.FavoriteMasterService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class FavoriteMasterServiceImpl implements FavoriteMasterService {
@@ -19,27 +19,29 @@ public class FavoriteMasterServiceImpl implements FavoriteMasterService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<FavoriteMaster> findByCustomer(User customer) {
-        return favoriteMasterRepository.findByCustomer(customer);
+        return favoriteMasterRepository.findByCustomerOrderByAddedAtDesc(customer);
     }
 
     @Override
-    public Optional<FavoriteMaster> findByCustomerAndMaster(User customer, User master) {
-        return favoriteMasterRepository.findByCustomerAndMaster(customer, master);
-    }
-
-    @Override
-    public boolean existsByCustomerAndMaster(User customer, User master) {
+    @Transactional(readOnly = true)
+    public boolean isFavorite(User customer, User master) {
         return favoriteMasterRepository.findByCustomerAndMaster(customer, master).isPresent();
     }
 
-    //todo: посмотреть сигнатуру
     @Override
+    @Transactional
     public FavoriteMaster add(User customer, User master, String note) {
-        return favoriteMasterRepository.save(new FavoriteMaster(customer, master, note));
+        FavoriteMaster favorite = new FavoriteMaster();
+        favorite.setCustomer(customer);
+        favorite.setMaster(master);
+        favorite.setNote(note);
+        return favoriteMasterRepository.save(favorite);
     }
 
     @Override
+    @Transactional
     public void remove(User customer, User master) {
         favoriteMasterRepository.deleteByCustomerAndMaster(customer, master);
     }

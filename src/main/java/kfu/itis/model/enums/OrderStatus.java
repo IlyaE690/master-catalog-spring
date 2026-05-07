@@ -1,5 +1,5 @@
 package kfu.itis.model.enums;
 
 public enum OrderStatus {
-    NEW, IN_PROGRESS, COMPLETED, CANCELLED
+    NEW, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED
 }

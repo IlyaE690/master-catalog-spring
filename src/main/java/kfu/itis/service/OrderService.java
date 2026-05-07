@@ -4,6 +4,7 @@ import kfu.itis.model.entity.Order;
 import kfu.itis.model.entity.User;
 import kfu.itis.model.enums.OrderStatus;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,11 +16,19 @@ public interface OrderService {
 
     List<Order> findByMaster(User master);
 
-    List<Order> findByStatus(OrderStatus status);
+    List<Order> findByCustomerAndStatus(User customer, OrderStatus status);
+
+    List<Order> findByMasterAndStatus(User master, OrderStatus status);
 
     List<Order> findNewOrdersForMaster(Long masterId);
 
+    List<Order> findOrdersByFilters(Long specializationId, OrderStatus status,
+                                    BigDecimal minPrice, BigDecimal maxPrice,
+                                    String cityInAddress);
+
     List<User> findHighCostMasters();
+
+    long countCompletedByMaster(User master);
 
     Order create(Order order);
 
@@ -27,7 +36,9 @@ public interface OrderService {
 
     Order assignMaster(Long orderId, User master);
 
-    Order updateStatus(Long orderId, OrderStatus status);
+    Order startWork(Long orderId);
+
+    Order complete(Long orderId);
 
     Order cancel(Long orderId);
 }

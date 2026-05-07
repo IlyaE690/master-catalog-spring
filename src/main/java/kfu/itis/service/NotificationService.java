@@ -11,8 +11,6 @@ public interface NotificationService {
 
     List<Notification> findUnreadByUser(User user);
 
-    int countUnreadByUser(User user);
-
     Notification create(Notification notification);
 
     void markAsRead(Long notificationId);
