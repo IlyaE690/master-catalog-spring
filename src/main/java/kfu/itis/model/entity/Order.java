@@ -56,6 +56,9 @@ public class Order {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private LocalDateTime scheduledDate;
+
     private LocalDateTime completedAt;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
