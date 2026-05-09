@@ -18,7 +18,7 @@
             <#if Session.SPRING_SECURITY_CONTEXT??>
                 <#assign auth = Session.SPRING_SECURITY_CONTEXT.authentication>
                 <#if auth.authorities?seq_contains("ROLE_CUSTOMER")>
-                    <button class="btn btn-outline-danger btn-sm" onclick="toggleFavorite(${master.id})">
+                    <button class="btn btn-outline-danger btn-sm" onclick="addToFavorites(${master.id})">
                         В избранное
                     </button>
                     <a href="/orders/new" class="btn btn-primary btn-sm">Создать заказ</a>
