@@ -1,9 +1,12 @@
 package kfu.itis.service.impl;
 
+import kfu.itis.model.entity.Notification;
 import kfu.itis.model.entity.Order;
 import kfu.itis.model.entity.User;
+import kfu.itis.model.enums.NotificationType;
 import kfu.itis.model.enums.OrderStatus;
 import kfu.itis.repository.OrderRepository;
+import kfu.itis.service.NotificationService;
 import kfu.itis.service.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +20,21 @@ import java.util.Optional;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final NotificationService notificationService;
 
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository,  NotificationService notificationService) {
         this.orderRepository = orderRepository;
+        this.notificationService = notificationService;
+    }
+
+    private void createNotification(User user, String title, String message, Long orderId) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setRelatedOrderId(orderId);
+        notification.setType(NotificationType.STATUS_CHANGED);
+        notificationService.create(notification);
     }
 
     @Override
@@ -98,7 +113,13 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Заказ не найден: " + orderId));
         order.setMaster(master);
         order.setStatus(OrderStatus.ASSIGNED);
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        createNotification(order.getCustomer(),
+                "Мастер назначен",
+                "Мастер " + master.getFirstName() + " " + master.getLastName() + " принял ваш заказ <<" + order.getTitle() + ">>",
+                order.getId());
+        return saved;
     }
 
     @Override
@@ -107,7 +128,16 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Заказ не найден: " + orderId));
         order.setStatus(OrderStatus.IN_PROGRESS);
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        createNotification(
+                order.getCustomer(),
+                "Мастер начал работу",
+                "Мастер приступил к выполнению заказа <<" + order.getTitle() + ">>",
+                order.getId()
+        );
+
+        return saved;
     }
 
     @Override
@@ -117,7 +147,16 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Заказ не найден: " + orderId));
         order.setStatus(OrderStatus.COMPLETED);
         order.setCompletedAt(LocalDateTime.now());
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        createNotification(
+                order.getCustomer(),
+                "Заказ выполнен",
+                "Мастер завершил выполнение заказа «" + order.getTitle() + "». Оставьте отзыв!",
+                order.getId()
+        );
+
+        return saved;
     }
 
     @Override
@@ -126,6 +165,17 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Заказ не найден: " + orderId));
         order.setStatus(OrderStatus.CANCELLED);
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        if (order.getMaster() != null) {
+            createNotification(
+                    order.getMaster(),
+                    "Заказ отменён",
+                    "Заказчик отменил заказ «" + order.getTitle() + "»",
+                    order.getId()
+            );
+        }
+
+        return saved;
     }
 }
