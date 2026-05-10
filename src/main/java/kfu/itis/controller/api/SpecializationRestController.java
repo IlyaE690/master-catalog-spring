@@ -1,6 +1,5 @@
-package kfu.itis.controller;
+package kfu.itis.controller.api;
 
-import kfu.itis.api.generated.api.SpecializationApi;
 import kfu.itis.api.generated.dto.CreateSpecializationRequest;
 import kfu.itis.api.generated.dto.SpecializationResponse;
 import kfu.itis.api.generated.dto.UpdateSpecializationRequest;
@@ -8,55 +7,65 @@ import kfu.itis.model.entity.Specialization;
 import kfu.itis.service.SpecializationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-public class SpecializationController implements SpecializationApi {
+@RequestMapping("/api/specializations")
+public class SpecializationRestController {
 
     private final SpecializationService specializationService;
 
-    public SpecializationController(SpecializationService specializationService) {
+    public SpecializationRestController(SpecializationService specializationService) {
         this.specializationService = specializationService;
     }
 
-    @Override
-    public ResponseEntity<List<SpecializationResponse>> getAllSpecializations() {
-        List<SpecializationResponse> specializations = specializationService.findAll()
+    @GetMapping
+    public ResponseEntity<List<SpecializationResponse>> getAll() {
+        List<SpecializationResponse> list = specializationService.findAll()
                 .stream()
                 .map(this::toDto)
                 .toList();
-        return ResponseEntity.ok(specializations);
+        return ResponseEntity.ok(list);
     }
 
-    @Override
-    public ResponseEntity<SpecializationResponse> getSpecializationById(Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<SpecializationResponse> getById(@PathVariable Long id) {
         return specializationService.findById(id)
                 .map(this::toDto)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Override
-    public ResponseEntity<SpecializationResponse> createSpecialization(CreateSpecializationRequest request) {
+    @PostMapping
+    public ResponseEntity<SpecializationResponse> create(@RequestBody CreateSpecializationRequest request) {
+        BigDecimal price = request.getBasePrice() != null
+                ? request.getBasePrice()
+                : BigDecimal.ZERO;
+
         Specialization created = specializationService.create(
                 request.getName(),
                 request.getDescription(),
-                request.getBasePrice() != null ? BigDecimal.valueOf(request.getBasePrice()) : null,
+                price,
                 request.getWeatherDependent()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(created));
     }
 
-    @Override
-    public ResponseEntity<SpecializationResponse> updateSpecialization(Long id, UpdateSpecializationRequest request) {
+    @PutMapping("/{id}")
+    public ResponseEntity<SpecializationResponse> update(@PathVariable Long id,
+                                                         @RequestBody UpdateSpecializationRequest request) {
+        BigDecimal price = request.getBasePrice() != null
+                ? request.getBasePrice()
+                : BigDecimal.ZERO;
+
         return specializationService.update(
                         id,
                         request.getName(),
                         request.getDescription(),
-                        request.getBasePrice() != null ? BigDecimal.valueOf(request.getBasePrice()) : null,
+                        price,
                         request.getWeatherDependent()
                 )
                 .map(this::toDto)
@@ -64,8 +73,8 @@ public class SpecializationController implements SpecializationApi {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Override
-    public ResponseEntity<Void> deleteSpecialization(Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         return specializationService.delete(id)
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.notFound().build();
@@ -76,7 +85,9 @@ public class SpecializationController implements SpecializationApi {
         response.setId(entity.getId());
         response.setName(entity.getName());
         response.setDescription(entity.getDescription());
-        response.setBasePrice(entity.getBasePrice() != null ? entity.getBasePrice().doubleValue() : null);
+        response.setBasePrice(entity.getBasePrice() != null
+                ? entity.getBasePrice().doubleValue()
+                : null);
         response.setWeatherDependent(entity.getWeatherDependent());
         return response;
     }
