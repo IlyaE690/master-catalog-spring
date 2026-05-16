@@ -6,6 +6,7 @@ import kfu.itis.model.entity.User;
 import kfu.itis.service.OrderService;
 import kfu.itis.service.SpecializationService;
 import kfu.itis.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,8 @@ public class OrderController {
     private final OrderService orderService;
     private final UserService userService;
     private final SpecializationService specializationService;
+    @Value("${app.yandex.maps-api-key:}")
+    private String yandexMapsApiKey;
 
     public OrderController(OrderService orderService,  UserService userService, SpecializationService specializationService) {
         this.orderService = orderService;
@@ -31,6 +34,7 @@ public class OrderController {
     @GetMapping("/new")
     public String newOrderForm(Model model) {
         model.addAttribute("specializations", specializationService.findAll());
+        model.addAttribute("yandexApiKey", yandexMapsApiKey);
         return "orders/create";
     }
 
@@ -72,7 +76,7 @@ public class OrderController {
 
         model.addAttribute("order", order);
         model.addAttribute("isCustomer", order.getCustomer().getUsername().equals(principal.getName()));
-        model.addAttribute("isMaster", order != null && order.getMaster().getUsername().equals(principal.getName()));
+        model.addAttribute("isMaster", order.getMaster() != null && order.getMaster().getUsername().equals(principal.getName()));
 
         return "orders/details";
     }

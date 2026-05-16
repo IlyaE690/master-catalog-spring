@@ -22,4 +22,8 @@
         </div>
     </div>
 
+    <div class="alert alert-info mt-4" role="alert">
+        <strong>Актуальная погода для планирования работ:</strong> ${weatherSummary!"Погода временно недоступна"}
+    </div>
+
 </@layout.page>

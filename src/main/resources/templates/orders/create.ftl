@@ -37,7 +37,51 @@
             <input type="datetime-local" class="form-control" id="scheduledDate" name="scheduledDate" required>
         </div>
 
+
+        <div class="mb-3">
+            <label for="minRating" class="form-label">Минимальный рейтинг мастера</label>
+            <select class="form-select" id="minRating" name="minRating">
+                <option value="">Не важно</option>
+                <option value="4.0">От 4.0</option>
+                <option value="4.5">От 4.5</option>
+                <option value="4.8">От 4.8</option>
+            </select>
+        </div>
+
+        <button type="button" id="aiSuggestBtn" class="btn btn-outline-secondary mb-3">Подобрать мастера с ИИ</button>
+        <div id="aiBox" class="alert alert-secondary" style="display:none;">
+            <p><strong>Сформированный промпт для ИИ:</strong></p>
+            <pre id="aiPrompt" style="white-space: pre-wrap;"></pre>
+            <p class="mt-2"><strong>Подходящие мастера:</strong></p>
+            <ul id="aiMasters"></ul>
+        </div>
         <button type="submit" class="btn btn-primary">Создать заказ</button>
     </form>
 
+    <div id="order-map" class="mt-3" style="height: 350px;"></div>
+    <small class="text-muted">Карта по адресу заказа (Yandex Maps API)</small>
+
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=${yandexApiKey!""}"></script>
+    <script>
+        const addressInput = document.getElementById('address');
+        ymaps.ready(() => {
+            const map = new ymaps.Map('order-map', {center: [55.7887,49.1221], zoom: 11});
+            let placemark = null;
+            const updateMap = () => {
+                if (!addressInput.value) return;
+                ymaps.geocode(addressInput.value).then(res => {
+                    const first = res.geoObjects.get(0);
+                    if (!first) return;
+                    const coords = first.geometry.getCoordinates();
+                    map.setCenter(coords, 15);
+                    if (placemark) map.geoObjects.remove(placemark);
+                    placemark = new ymaps.Placemark(coords);
+                    map.geoObjects.add(placemark);
+                });
+            };
+            addressInput.addEventListener('change', updateMap);
+        });
+    </script>
+
+    <script src="/js/ai-order.js"></script>
 </@layout.page>
