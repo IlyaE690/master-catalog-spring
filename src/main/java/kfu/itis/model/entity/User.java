@@ -49,6 +49,10 @@ public class User {
 
     @Column(nullable = false)
     @Builder.Default
+    private Double badWeatherPriceCoefficient = 1.20;
+
+    @Column(nullable = false)
+    @Builder.Default
     private boolean enabled = true;
 
     @Column(nullable = false)

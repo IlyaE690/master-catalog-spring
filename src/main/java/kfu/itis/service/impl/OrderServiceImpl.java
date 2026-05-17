@@ -8,6 +8,7 @@ import kfu.itis.model.enums.OrderStatus;
 import kfu.itis.repository.OrderRepository;
 import kfu.itis.service.NotificationService;
 import kfu.itis.service.OrderService;
+import kfu.itis.service.WeatherService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +22,12 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final NotificationService notificationService;
+    private final WeatherService weatherService;
 
-    public OrderServiceImpl(OrderRepository orderRepository,  NotificationService notificationService) {
+    public OrderServiceImpl(OrderRepository orderRepository, NotificationService notificationService, WeatherService weatherService) {
         this.orderRepository = orderRepository;
         this.notificationService = notificationService;
+        this.weatherService = weatherService;
     }
 
     private void createNotification(User user, String title, String message, Long orderId) {
@@ -97,6 +100,22 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Order create(Order order) {
         order.setStatus(OrderStatus.NEW);
+
+        boolean badWeather = weatherService.isBadWeatherNow();
+        double weatherCoefficient = 1.0;
+
+        if (Boolean.TRUE.equals(order.getSpecialization().getWeatherDependent()) && badWeather) {
+            weatherCoefficient = weatherService.getWeatherCoefficientForOutdoorWorks();
+            if (order.getMaster() != null && order.getMaster().getBadWeatherPriceCoefficient() != null) {
+                weatherCoefficient *= order.getMaster().getBadWeatherPriceCoefficient();
+            }
+        }
+
+        order.setWeatherCoefficient(weatherCoefficient);
+        if (order.getPrice() == null && order.getSpecialization().getBasePrice() != null) {
+            order.setPrice(order.getSpecialization().getBasePrice().multiply(BigDecimal.valueOf(weatherCoefficient)));
+        }
+
         return orderRepository.save(order);
     }
 
