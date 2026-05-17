@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.openapi.generator") version "7.10.0"
+    jacoco
 
 }
 
@@ -37,6 +38,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-jackson:${jwtVersion}")
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.flywaydb:flyway-core")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.25")
 
     compileOnly("org.projectlombok:lombok")
@@ -98,4 +100,30 @@ tasks.named("compileJava") {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.85".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
 }

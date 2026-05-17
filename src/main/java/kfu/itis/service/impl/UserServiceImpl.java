@@ -5,6 +5,7 @@ import kfu.itis.model.entity.User;
 import kfu.itis.model.enums.Role;
 import kfu.itis.repository.UserRepository;
 import kfu.itis.service.UserService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable("popularMasters")
     public List<User> findAllMasters() {
         return userRepository.findByRoleOrderByRatingDesc(Role.MASTER);
     }
@@ -52,6 +54,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "mastersByName", key = "#query")
     public List<User> findMastersByName(String query) {
         return userRepository.findMastersByName(query);
     }

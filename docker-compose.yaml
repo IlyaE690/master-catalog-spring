@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  app:
+    build: .
+    container_name: household-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    env_file:
+      - .env
+
   postgres:
     image: postgres:16
     container_name: household-db
@@ -13,7 +29,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     env_file:
-      .env
+      - .env
 
   redis:
     image: redis:7-alpine
