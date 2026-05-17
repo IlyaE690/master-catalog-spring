@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const specializationId = document.getElementById('specializationId').value;
         const minRating = document.getElementById('minRating').value;
 
-        if (!issueDescription || !specializationId) {
-            alert('Заполните описание поломки и специализацию');
+        if (!issueDescription) {
+            alert('Заполните описание поломки');
             return;
         }
 

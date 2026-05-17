@@ -19,9 +19,14 @@ public class AiSuggestionController {
     @PostMapping("/ai-suggest")
     public ResponseEntity<Map<String, Object>> suggest(@RequestBody Map<String, Object> body) {
         String issueDescription = body.getOrDefault("issueDescription", "").toString();
-        Long specializationId = Long.valueOf(body.get("specializationId").toString());
+        Long specializationId = body.get("specializationId") == null || body.get("specializationId").toString().isBlank()
+                ? null
+                : Long.valueOf(body.get("specializationId").toString());
         Double minRating = body.get("minRating") == null ? null : Double.valueOf(body.get("minRating").toString());
 
-        return ResponseEntity.ok(aiOrderSuggestionService.buildSuggestion(issueDescription, specializationId, minRating));
+        Map<String, Object> suggestion = specializationId == null
+                ? aiOrderSuggestionService.buildSuggestion(issueDescription, minRating)
+                : aiOrderSuggestionService.buildSuggestion(issueDescription, specializationId, minRating);
+        return ResponseEntity.ok(suggestion);
     }
 }
