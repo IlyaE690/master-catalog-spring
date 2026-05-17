@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AiOrderSuggestionServiceImpl implements AiOrderSuggestionService {
@@ -20,6 +21,13 @@ public class AiOrderSuggestionServiceImpl implements AiOrderSuggestionService {
     public AiOrderSuggestionServiceImpl(UserService userService, SpecializationService specializationService) {
         this.userService = userService;
         this.specializationService = specializationService;
+    }
+
+    @Override
+    public Map<String, Object> buildSuggestion(String issueDescription, Double minRating) {
+        Specialization specialization = inferSpecializationByDescription(issueDescription)
+                .orElseThrow(() -> new RuntimeException("Не удалось определить специализацию по описанию"));
+        return buildSuggestion(issueDescription, specialization.getId(), minRating);
     }
 
     @Override
@@ -53,5 +61,32 @@ public class AiOrderSuggestionServiceImpl implements AiOrderSuggestionService {
                 "и минимальному рейтингу " + (minRating == null ? "без ограничений" : minRating) + ". " +
                 "Кандидаты: " + String.join(", ", candidates) + ". " +
                 "Верни краткий ответ: 1) какой мастер лучше, 2) почему, 3) ориентир по сложности работ.";
+    }
+
+
+    private Optional<Specialization> inferSpecializationByDescription(String issueDescription) {
+        String normalized = issueDescription == null ? "" : issueDescription.toLowerCase();
+        Map<String, List<String>> keywordsBySpecialization = Map.of(
+                "Сантехник", List.of("теч", "кран", "труб", "слив", "унитаз", "вода", "батаре"),
+                "Электрик", List.of("свет", "провод", "розет", "электр", "выбивает", "щиток"),
+                "Отделочник", List.of("обои", "штукатур", "краск", "плитк", "потол", "стен")
+        );
+
+        List<Specialization> allSpecializations = specializationService.findAll();
+        return allSpecializations.stream()
+                .map(spec -> Map.entry(spec, scoreSpecialization(normalized, keywordsBySpecialization.get(spec.getName()))))
+                .filter(entry -> entry.getValue() > 0)
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .or(() -> allSpecializations.stream().findFirst());
+    }
+
+    private int scoreSpecialization(String normalizedIssueDescription, List<String> keywords) {
+        if (keywords == null || normalizedIssueDescription.isBlank()) {
+            return 0;
+        }
+        return (int) keywords.stream()
+                .filter(normalizedIssueDescription::contains)
+                .count();
     }
 }
