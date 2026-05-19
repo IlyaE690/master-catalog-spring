@@ -3,6 +3,8 @@ package kfu.itis.controller;
 import kfu.itis.model.entity.Order;
 import kfu.itis.model.entity.Specialization;
 import kfu.itis.model.entity.User;
+import kfu.itis.service.CurrencyService;
+import kfu.itis.service.ImageStorageService;
 import kfu.itis.service.OrderService;
 import kfu.itis.service.SpecializationService;
 import kfu.itis.service.UserService;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -22,13 +25,19 @@ public class OrderController {
     private final OrderService orderService;
     private final UserService userService;
     private final SpecializationService specializationService;
+    private final CurrencyService currencyService;
+    private final ImageStorageService imageStorageService;
     @Value("${app.yandex.maps-api-key:}")
     private String yandexMapsApiKey;
 
-    public OrderController(OrderService orderService,  UserService userService, SpecializationService specializationService) {
+    public OrderController(OrderService orderService,  UserService userService, SpecializationService specializationService,
+                           CurrencyService currencyService,
+                           ImageStorageService imageStorageService) {
         this.orderService = orderService;
         this.userService = userService;
         this.specializationService = specializationService;
+        this.currencyService = currencyService;
+        this.imageStorageService = imageStorageService;
     }
 
     @GetMapping("/new")
@@ -43,7 +52,8 @@ public class OrderController {
                               @RequestParam String title,
                               @RequestParam String description,
                               @RequestParam String address,
-                              @RequestParam String scheduledDate,
+                              @RequestParam LocalDateTime scheduledDate,
+                              @RequestParam(required = false) MultipartFile orderPhoto,
                               Principal principal) {
         User customer = userService.findByUsername(principal.getName()).orElseThrow();
 
@@ -56,7 +66,8 @@ public class OrderController {
         order.setTitle(title);
         order.setDescription(description);
         order.setAddress(address);
-        order.setScheduledDate(LocalDateTime.parse(scheduledDate));
+        order.setScheduledDate(scheduledDate);
+        order.setImageUrl(imageStorageService.uploadOrderImage(orderPhoto));
 
         orderService.create(order);
         return "redirect:/orders/my";
@@ -77,6 +88,7 @@ public class OrderController {
         model.addAttribute("order", order);
         model.addAttribute("isCustomer", order.getCustomer().getUsername().equals(principal.getName()));
         model.addAttribute("isMaster", order.getMaster() != null && order.getMaster().getUsername().equals(principal.getName()));
+        model.addAttribute("priceInUsd", currencyService.convertRubToUsd(order.getPrice()));
 
         return "orders/details";
     }

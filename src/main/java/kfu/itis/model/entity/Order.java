@@ -41,6 +41,9 @@ public class Order {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String address;
 
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

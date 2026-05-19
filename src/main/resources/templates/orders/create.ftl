@@ -3,7 +3,7 @@
 
     <h2>Создать заказ</h2>
 
-    <form method="post" action="/orders/new">
+    <form method="post" action="/orders/new" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="specializationId" class="form-label">Тип услуги</label>
             <select class="form-select" id="specializationId" name="specializationId" required>
@@ -55,6 +55,13 @@
             <p class="mt-2"><strong>Подходящие мастера:</strong></p>
             <ul id="aiMasters"></ul>
         </div>
+
+        <div class="mb-3">
+            <label for="orderPhoto" class="form-label">Фото проблемы (опционально)</label>
+            <input type="file" class="form-control" id="orderPhoto" name="orderPhoto" accept="image/*">
+            <small class="text-muted">При настройке Cloudinary фото будет загружено и прикреплено к заявке</small>
+        </div>
+
         <button type="submit" class="btn btn-primary">Создать заказ</button>
     </form>
 
