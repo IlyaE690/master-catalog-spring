@@ -21,7 +21,7 @@ public class FavoriteMasterServiceImpl implements FavoriteMasterService {
     @Override
     @Transactional(readOnly = true)
     public List<FavoriteMaster> findByCustomer(User customer) {
-        return favoriteMasterRepository.findByCustomerOrderByAddedAtDesc(customer);
+        return favoriteMasterRepository.findByCustomer(customer);
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface FavoriteMasterRepository extends JpaRepository<FavoriteMaster, Long> {
 
-    List<FavoriteMaster> findByCustomerOrderByAddedAtDesc(User customer);
+    List<FavoriteMaster> findByCustomer(User customer);
 
     Optional<FavoriteMaster> findByCustomerAndMaster(User customer, User master);
 
