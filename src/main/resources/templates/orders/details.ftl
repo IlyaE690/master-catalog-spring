@@ -16,6 +16,11 @@
                     <p><strong>Ориентир в USD:</strong> ${priceInUsd} $</p>
                 </#if>
             </#if>
+            <#if order.imageUrl??>
+                <p><strong>Фото проблемы:</strong></p>
+                <img src="${order.imageUrl}" alt="Фото заявки" class="img-fluid rounded" style="max-height: 320px;">
+            </#if>
+
             <#if order.master??>
                 <p><strong>Мастер:</strong> ${order.master.firstName!} ${order.master.lastName!}</p>
             </#if>

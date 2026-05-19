@@ -3,6 +3,7 @@ package kfu.itis.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kfu.itis.service.CurrencyService;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,8 @@ import java.net.http.HttpResponse;
 public class CurrencyServiceImpl implements CurrencyService {
 
     private static final Logger log = LoggerFactory.getLogger(CurrencyServiceImpl.class);
-    private static final String CBR_DAILY_JSON_URL = "https://www.cbr-xml-daily.ru/daily_json.js";
+    @Value("${app.external-api.currency-url}")
+    private String CBR_DAILY_JSON_URL;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper;
