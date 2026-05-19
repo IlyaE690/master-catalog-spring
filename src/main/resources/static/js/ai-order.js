@@ -12,17 +12,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const resp = await fetch('/api/orders/ai-suggest', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({issueDescription, specializationId, minRating: minRating || null})
-        });
+        try {
+            const resp = await fetch('/api/orders/ai-suggest', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+                body: JSON.stringify({issueDescription, specializationId, minRating: minRating || null})
+            });
 
-        const data = await resp.json();
-        document.getElementById('aiPrompt').textContent = data.prompt;
-        document.getElementById('aiMasters').innerHTML = (data.recommendedMasters || [])
-            .map(m => `<li>${m}</li>`)
-            .join('');
-        document.getElementById('aiBox').style.display = 'block';
+            const data = await resp.json();
+            if (!resp.ok) {
+                throw new Error(data.error || 'Не удалось получить рекомендации');
+            }
+
+            document.getElementById('aiPrompt').textContent = data.prompt;
+            document.getElementById('aiMasters').innerHTML = (data.recommendedMasters || [])
+                .map(m => `<li>${m}</li>`)
+                .join('');
+            document.getElementById('aiBox').style.display = 'block';
+        } catch (e) {
+            alert(e.message || 'Ошибка при AJAX-запросе');
+        }
     });
 });

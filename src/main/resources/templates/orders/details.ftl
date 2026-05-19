@@ -12,6 +12,9 @@
             <p><strong>Дата:</strong> ${order.scheduledDate}</p>
             <#if order.price??>
                 <p><strong>Цена:</strong> ${order.price} ₽</p>
+                <#if priceInUsd?? && (priceInUsd > 0)>
+                    <p><strong>Ориентир в USD:</strong> ${priceInUsd} $</p>
+                </#if>
             </#if>
             <#if order.master??>
                 <p><strong>Мастер:</strong> ${order.master.firstName!} ${order.master.lastName!}</p>
