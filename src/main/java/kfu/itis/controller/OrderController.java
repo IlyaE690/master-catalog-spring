@@ -7,6 +7,7 @@ import kfu.itis.service.CurrencyService;
 import kfu.itis.service.ImageStorageService;
 import kfu.itis.service.OrderService;
 import kfu.itis.service.SpecializationService;
+import kfu.itis.service.CurrencyService;
 import kfu.itis.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
