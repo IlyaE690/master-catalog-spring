@@ -1,11 +1,22 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:3.4.4")
+        classpath("io.spring.gradle:dependency-management-plugin:1.1.7")
+        classpath("org.openapitools:openapi-generator-gradle-plugin:7.10.0")
+    }
+}
+
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.4.4"
-    id("io.spring.dependency-management") version "1.1.7"
-    id("org.openapi.generator") version "7.10.0"
     jacoco
-
 }
+
+apply(plugin = "org.springframework.boot")
+apply(plugin = "io.spring.dependency-management")
+apply(plugin = "org.openapi.generator")
 
 group = "kfu.itis"
 version = "1.0-SNAPSHOT"
@@ -48,14 +59,12 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
 
-//    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-//    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 val openApiSpec = "$projectDir/src/main/resources/api.yaml"
 val openApiGeneratedDir: String = layout.buildDirectory.dir("generated").get().asFile.absolutePath
 
-openApiGenerate {
+configure<org.openapitools.generator.gradle.plugin.extensions.OpenApiGeneratorGenerateExtension> {
     inputSpec.set(openApiSpec)
     outputDir.set(openApiGeneratedDir)
     generatorName.set("spring")

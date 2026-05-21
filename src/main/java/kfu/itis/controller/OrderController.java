@@ -7,7 +7,7 @@ import kfu.itis.service.CurrencyService;
 import kfu.itis.service.ImageStorageService;
 import kfu.itis.service.OrderService;
 import kfu.itis.service.SpecializationService;
-import kfu.itis.service.CurrencyService;
+
 import kfu.itis.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -104,7 +104,7 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/accept")
-    public String acceptOrder(@PathVariable Long id, Principal principal, Model model) {
+    public String acceptOrder(@PathVariable Long id, Principal principal) {
         User master = userService.findByUsername(principal.getName()).orElseThrow();
 
         orderService.assignMaster(id, master);
