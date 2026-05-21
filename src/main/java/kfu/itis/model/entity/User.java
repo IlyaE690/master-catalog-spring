@@ -7,6 +7,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -92,7 +93,7 @@ public class User {
     @Builder.Default
     private Set<FavoriteMaster> favoriteMasters = new HashSet<>();
 
-    @OneToMany(fetch =  FetchType.LAZY, mappedBy = "master")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "master")
     @Builder.Default
     private Set<FavoriteMaster> favoriteBy = new HashSet<>();
 
@@ -101,7 +102,16 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
 
-
-
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }

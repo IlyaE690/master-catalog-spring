@@ -2,6 +2,7 @@ package kfu.itis.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "favorite_masters")
@@ -26,4 +27,16 @@ public class FavoriteMaster {
     @Column(length = 300)
     private String note;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FavoriteMaster that = (FavoriteMaster) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }

@@ -3,8 +3,8 @@ package kfu.itis.model.entity;
 import jakarta.persistence.*;
 import kfu.itis.model.enums.NotificationType;
 import lombok.*;
-
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "notifications")
@@ -45,5 +45,18 @@ public class Notification {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Notification that = (Notification) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
