@@ -23,6 +23,10 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public User register(String username, String email, String password,
                          String firstName, String lastName, String phone, Role role) {
+        if (role == Role.ADMIN) {
+            throw new RuntimeException("Невозможно зарегистрировать администратора");
+        }
+
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("Аккаунт с таким ником уже существует");
         }

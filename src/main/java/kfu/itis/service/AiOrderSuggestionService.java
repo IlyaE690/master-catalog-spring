@@ -1,12 +1,8 @@
 package kfu.itis.service;
 
-import java.util.List;
-import java.util.Map;
+import kfu.itis.model.dto.AiSuggestionResponseDto;
 
 public interface AiOrderSuggestionService {
-    Map<String, Object> buildSuggestion(String issueDescription, Double minRating);
-
-    Map<String, Object> buildSuggestion(String issueDescription, Long specializationId, Double minRating);
-
-    String buildPrompt(String issueDescription, String specializationName, Double minRating, List<String> candidates);
+    AiSuggestionResponseDto buildSuggestion(String issueDescription, Double minRating);
+    AiSuggestionResponseDto buildSuggestion(String issueDescription, Long specializationId, Double minRating);
 }

@@ -2,6 +2,8 @@ package kfu.itis.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
@@ -11,7 +13,9 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FavoriteMaster {
+public class FavoriteMaster implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -10,17 +10,23 @@
 
             <h5>Специализации:</h5>
             <ul>
-                <#list master.specializations as spec>
-                    <li>${spec.name} — от ${spec.basePrice} ₽</li>
-                </#list>
+                <#if master.specializations?? && master.specializations?size gt 0>
+                    <#list master.specializations as spec>
+                        <li>${spec.name} — от ${spec.basePrice} ₽</li>
+                    </#list>
+                <#else>
+                    <li>Не указаны</li>
+                </#if>
             </ul>
 
             <#if Session.SPRING_SECURITY_CONTEXT??>
                 <#assign auth = Session.SPRING_SECURITY_CONTEXT.authentication>
                 <#if auth.authorities?seq_contains("ROLE_CUSTOMER")>
-                    <button class="btn btn-outline-danger btn-sm" onclick="addToFavorites(${master.id})">
-                        В избранное
-                    </button>
+                    <form method="post" action="/favorites/add" style="display: inline;">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                        <input type="hidden" name="masterId" value="${master.id}"/>
+                        <button type="submit" class="btn btn-outline-danger btn-sm">В избранное</button>
+                    </form>
                     <a href="/orders/new" class="btn btn-primary btn-sm">Создать заказ</a>
                 </#if>
             </#if>

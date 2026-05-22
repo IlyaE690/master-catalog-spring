@@ -14,9 +14,19 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, CustomOrderRepository {
 
-    List<Order> findByCustomerOrderByCreatedAtDesc(User customer);
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.specialization " +
+            "LEFT JOIN FETCH o.customer " +
+            "WHERE o.customer = :customer " +
+            "ORDER BY o.createdAt DESC")
+    List<Order> findByCustomerOrderByCreatedAtDesc(@Param("customer") User customer);
 
-    List<Order> findByMasterOrderByCreatedAtDesc(User master);
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.specialization " +
+            "LEFT JOIN FETCH o.master " +
+            "WHERE o.master = :master " +
+            "ORDER BY o.createdAt DESC")
+    List<Order> findByMasterOrderByCreatedAtDesc(@Param("master") User master);
 
     List<Order> findByCustomerAndStatusOrderByCreatedAtDesc(User customer, OrderStatus status);
 
@@ -26,8 +36,9 @@ public interface OrderRepository extends JpaRepository<Order, Long>, CustomOrder
 
     List<Order> findByStatus(OrderStatus status);
 
-    // Новые заказы для мастера по его специализациям
-    @Query("SELECT o FROM Order o WHERE o.status = 'NEW' AND o.specialization IN " +
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.specialization " +
+            "WHERE o.status = 'NEW' AND o.specialization IN " +
             "(SELECT s FROM User u JOIN u.specializations s WHERE u.id = :masterId) " +
             "ORDER BY o.createdAt DESC")
     List<Order> findNewOrdersForMaster(@Param("masterId") Long masterId);

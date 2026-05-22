@@ -14,11 +14,13 @@ import kfu.itis.service.SpecializationService;
 import kfu.itis.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -39,20 +41,38 @@ public class OrderRestController {
 
     @GetMapping
     public ResponseEntity<List<OrderResponseDto>> getOrders(Principal principal) {
-        User user = userService.findByUsername(principal.getName()).orElseThrow();
-        return ResponseEntity.ok(orderService.findByCustomer(user).stream().map(orderMapper::toDto).toList());
+        User user = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        return ResponseEntity.ok(orderService.findByCustomer(user).stream()
+                .map(orderMapper::toDto)
+                .toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDto> getOrder(@PathVariable Long id) {
-        Order order = orderService.findById(id).orElseThrow(() -> new RuntimeException("Заказ не найден"));
+        Order order = orderService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Заказ не найден"));
         return ResponseEntity.ok(orderMapper.toDto(order));
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody @Valid OrderCreateRequestDto body, Principal principal) {
-        User user = userService.findByUsername(principal.getName()).orElseThrow();
-        Specialization specialization = specializationService.findById(body.specializationId()).orElseThrow();
+    public ResponseEntity<?> createOrder(@RequestBody @Valid OrderCreateRequestDto body,
+                                         BindingResult bindingResult,
+                                         Principal principal) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = bindingResult.getFieldErrors().stream()
+                    .collect(Collectors.toMap(
+                            e -> e.getField(),
+                            e -> e.getDefaultMessage(),
+                            (e1, e2) -> e1
+                    ));
+            return ResponseEntity.badRequest().body(errors);
+        }
+
+        User user = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        Specialization specialization = specializationService.findById(body.specializationId())
+                .orElseThrow(() -> new RuntimeException("Специализация не найдена"));
 
         Order order = new Order();
         order.setCustomer(user);
@@ -63,18 +83,20 @@ public class OrderRestController {
         order.setScheduledDate(body.scheduledDate());
 
         if (body.targetMasterId() != null) {
-            User targetMaster = userService.findById(body.targetMasterId()).orElseThrow();
+            User targetMaster = userService.findById(body.targetMasterId())
+                    .orElseThrow(() -> new RuntimeException("Мастер не найден"));
             order.setMaster(targetMaster);
         }
 
         Order created = orderService.create(order);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toDto(created));
-
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable Long id, @RequestBody OrderUpdateRequestDto body) {
-        Order order = orderService.findById(id).orElseThrow(() -> new RuntimeException("Заказ не найден"));
+    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable Long id,
+                                                        @RequestBody OrderUpdateRequestDto body) {
+        Order order = orderService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Заказ не найден"));
 
         if (body.title() != null) {
             order.setTitle(body.title());
@@ -94,7 +116,8 @@ public class OrderRestController {
     public ResponseEntity<?> updateStatus(@PathVariable Long id,
                                           @RequestBody @Valid OrderStatusUpdateRequestDto body,
                                           Principal principal) {
-        User user = userService.findByUsername(principal.getName()).orElseThrow();
+        User user = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         return switch (body.status()) {
             case "ASSIGNED" -> ResponseEntity.ok(orderMapper.toDto(orderService.assignMaster(id, user)));
@@ -106,14 +129,17 @@ public class OrderRestController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Order> deleteOrder(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         orderService.cancel(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/available")
     public ResponseEntity<List<OrderResponseDto>> getAvailableOrders(Principal principal) {
-        User master = userService.findByUsername(principal.getName()).orElseThrow();
-        return ResponseEntity.ok(orderService.findNewOrdersForMaster(master.getId()).stream().map(orderMapper::toDto).toList());
+        User master = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        return ResponseEntity.ok(orderService.findNewOrdersForMaster(master.getId()).stream()
+                .map(orderMapper::toDto)
+                .toList());
     }
 }

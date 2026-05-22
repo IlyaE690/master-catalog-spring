@@ -30,6 +30,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<User> findByIdWithSpecializations(Long id) {
+        return userRepository.findByIdWithSpecializations(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
@@ -44,7 +50,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     @Cacheable("popularMasters")
     public List<User> findAllMasters() {
-        return userRepository.findByRoleOrderByRatingDesc(Role.MASTER);
+        return userRepository.findAllMasters();
     }
 
     @Override
@@ -64,6 +70,12 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public List<User> findMastersBySpecializationAndMinRating(Specialization specialization, Double minRating) {
         return userRepository.findMastersBySpecializationAndMinRating(specialization, minRating);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findMastersByMinRating(Double minRating) {
+        return userRepository.findMastersByMinRating(minRating);
     }
 
     @Override

@@ -10,6 +10,8 @@
             </#if>
 
             <form method="post" action="/register">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="username" class="form-label">Логин</label>
@@ -44,12 +46,12 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="role" class="form-label">Роль</label>
+                    <label for="role" class="form-label">Регистрация как</label>
                     <select class="form-select" id="role" name="role" required>
-                        <#list roles as role>
-                            <option value="${role}">${role}</option>
-                        </#list>
+                        <option value="CUSTOMER">Потребитель</option>
+                        <option value="MASTER">Мастер</option>
                     </select>
+                    <small class="text-muted">Для регистрации как администратор обратитесь к существующему администратору</small>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>

@@ -18,24 +18,29 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.specializations WHERE u.role = 'MASTER' ORDER BY u.rating DESC")
     List<User> findByRoleOrderByRatingDesc(Role role);
 
     List<User> findByRole(Role role);
 
-    // Поиск мастеров по специализации
-    @Query("SELECT u FROM User u JOIN u.specializations s WHERE s = :specialization AND u.role = 'MASTER'")
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.specializations WHERE u.role = 'MASTER'")
+    List<User> findAllMasters();
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.specializations WHERE u.id = :id")
+    Optional<User> findByIdWithSpecializations(@Param("id") Long id);
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.specializations JOIN u.specializations s WHERE s = :specialization AND u.role = 'MASTER'")
     List<User> findAllMastersBySpecialization(@Param("specialization") Specialization specialization);
 
-    // Поиск мастеров по имени/фамилии
-    @Query("SELECT u FROM User u WHERE u.role = 'MASTER' AND " +
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.specializations WHERE u.role = 'MASTER' AND " +
             "(LOWER(u.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%')))")
     List<User> findMastersByName(@Param("query") String query);
 
-    // Мастера с рейтингом выше указанного и нужной специализацией
-    @Query("SELECT u FROM User u JOIN u.specializations s " +
-            "WHERE s = :specialization AND u.role = 'MASTER' AND u.rating >= :minRating " +
-            "ORDER BY u.rating DESC")
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.specializations WHERE u.role = 'MASTER' AND u.rating >= :minRating ORDER BY u.rating DESC")
+    List<User> findMastersByMinRating(@Param("minRating") Double minRating);
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.specializations JOIN u.specializations s WHERE s = :specialization AND u.role = 'MASTER' AND u.rating >= :minRating ORDER BY u.rating DESC")
     List<User> findMastersBySpecializationAndMinRating(@Param("specialization") Specialization specialization,
                                                        @Param("minRating") Double minRating);
 }

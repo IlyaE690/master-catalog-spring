@@ -3,20 +3,20 @@ package kfu.itis.controller;
 import kfu.itis.model.entity.Order;
 import kfu.itis.model.entity.Specialization;
 import kfu.itis.model.entity.User;
+import kfu.itis.model.enums.OrderStatus;
 import kfu.itis.service.CurrencyService;
 import kfu.itis.service.ImageStorageService;
 import kfu.itis.service.OrderService;
 import kfu.itis.service.SpecializationService;
-
 import kfu.itis.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
-
 import java.security.Principal;
 
 @Controller
@@ -50,6 +50,47 @@ public class OrderController {
         return "orders/create";
     }
 
+    @PostMapping("/create-with-master")
+    public String createOrderWithMaster(@RequestParam Long specializationId,
+                                        @RequestParam Long masterId,
+                                        @RequestParam String title,
+                                        @RequestParam String description,
+                                        @RequestParam String address,
+                                        @RequestParam LocalDateTime scheduledDate,
+                                        @RequestParam(required = false) MultipartFile orderPhoto,
+                                        Principal principal,
+                                        RedirectAttributes redirectAttributes) {
+
+        User customer = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        Specialization specialization = specializationService.findById(specializationId)
+                .orElseThrow(() -> new RuntimeException("Специализация не найдена"));
+
+        User master = userService.findById(masterId)
+                .orElseThrow(() -> new RuntimeException("Мастер не найден"));
+
+        Order order = new Order();
+        order.setCustomer(customer);
+        order.setSpecialization(specialization);
+        order.setMaster(master);
+        order.setTitle(title);
+        order.setDescription(description);
+        order.setAddress(address);
+        order.setScheduledDate(scheduledDate);
+        order.setStatus(OrderStatus.ASSIGNED);
+
+        if (orderPhoto != null && !orderPhoto.isEmpty()) {
+            String imageUrl = imageStorageService.uploadOrderImage(orderPhoto);
+            order.setImageUrl(imageUrl);
+        }
+
+        Order savedOrder = orderService.create(order);
+
+        redirectAttributes.addFlashAttribute("success", "Заказ создан и отправлен мастеру!");
+        return "redirect:/orders/" + savedOrder.getId();
+    }
+
     @PostMapping("/new")
     public String createOrder(@RequestParam Long specializationId,
                               @RequestParam String title,
@@ -57,20 +98,47 @@ public class OrderController {
                               @RequestParam String address,
                               @RequestParam LocalDateTime scheduledDate,
                               @RequestParam(required = false) MultipartFile orderPhoto,
-                              Principal principal) {
-        User customer = userService.findByUsername(principal.getName()).orElseThrow();
+                              Principal principal,
+                              RedirectAttributes redirectAttributes) {
 
-        Specialization specialization = specializationService.findById(specializationId).orElseThrow();
+        if (scheduledDate.isBefore(LocalDateTime.now())) {
+            redirectAttributes.addFlashAttribute("error", "Дата выполнения не может быть в прошлом");
+            return "redirect:/orders/new";
+        }
+
+        if (address == null || address.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Адрес обязателен для заполнения");
+            return "redirect:/orders/new";
+        }
+
+        if (address.trim().length() < 5) {
+            redirectAttributes.addFlashAttribute("error", "Введите корректный адрес (минимум 5 символов)");
+            return "redirect:/orders/new";
+        }
+
+        if (title == null || title.trim().length() < 3) {
+            redirectAttributes.addFlashAttribute("error", "Заголовок должен содержать минимум 3 символа");
+            return "redirect:/orders/new";
+        }
+
+        if (description == null || description.trim().length() < 5) {
+            redirectAttributes.addFlashAttribute("error", "Описание должно содержать минимум 5 символов");
+            return "redirect:/orders/new";
+        }
+
+        User customer = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        Specialization specialization = specializationService.findById(specializationId)
+                .orElseThrow(() -> new RuntimeException("Специализация не найдена"));
 
         Order order = new Order();
-
         order.setCustomer(customer);
         order.setSpecialization(specialization);
-        order.setTitle(title);
-        order.setDescription(description);
-        order.setAddress(address);
+        order.setTitle(title.trim());
+        order.setDescription(description.trim());
+        order.setAddress(address.trim());
         order.setScheduledDate(scheduledDate);
-
 
         if (orderPhoto != null && !orderPhoto.isEmpty()) {
             String imageUrl = imageStorageService.uploadOrderImage(orderPhoto);
@@ -78,12 +146,14 @@ public class OrderController {
         }
 
         orderService.create(order);
+        redirectAttributes.addFlashAttribute("success", "Заказ успешно создан!");
         return "redirect:/orders/my";
     }
 
     @GetMapping("/my")
     public String myOrders(Principal principal, Model model) {
-        User customer = userService.findByUsername(principal.getName()).orElseThrow();
+        User customer = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         model.addAttribute("orders", orderService.findByCustomer(customer));
         return "orders/list";
@@ -91,7 +161,8 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public String orderDetails(@PathVariable Long id, Model model, Principal principal) {
-        Order order = orderService.findById(id).orElseThrow(() -> new RuntimeException("Заказ не найден"));
+        Order order = orderService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Заказ не найден"));
 
         model.addAttribute("order", order);
         model.addAttribute("isCustomer", order.getCustomer().getUsername().equals(principal.getName()));
@@ -108,48 +179,61 @@ public class OrderController {
 
     @GetMapping("/available")
     public String availableOrders(Principal principal, Model model) {
-        User master = userService.findByUsername(principal.getName()).orElseThrow();
+        User master = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         model.addAttribute("orders", orderService.findNewOrdersForMaster(master.getId()));
-
         return "orders/available";
     }
 
     @PostMapping("/{id}/accept")
     public String acceptOrder(@PathVariable Long id, Principal principal) {
-        User master = userService.findByUsername(principal.getName()).orElseThrow();
+        User master = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         orderService.assignMaster(id, master);
-
         return "redirect:/orders/assigned";
     }
 
     @GetMapping("/assigned")
     public String assignedOrders(Principal principal, Model model) {
-        User master = userService.findByUsername(principal.getName()).orElseThrow();
+        User master = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         model.addAttribute("orders", orderService.findByMaster(master));
-
         return "orders/assigned";
     }
 
     @PostMapping("/{id}/start")
-    public String startOrder(@PathVariable Long id) {
-        orderService.startWork(id);
+    public String startOrder(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            orderService.startWork(id);
+            redirectAttributes.addFlashAttribute("success", "Работа над заказом начата");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/orders/" + id;
     }
 
     @PostMapping("/{id}/complete")
-    public String completeOrder(@PathVariable Long id) {
-        orderService.complete(id);
+    public String completeOrder(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            orderService.complete(id);
+            redirectAttributes.addFlashAttribute("success", "Заказ завершён");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/orders/" + id;
     }
 
     @PostMapping("/{id}/cancel")
-    public String cancelOrder(@PathVariable Long id) {
-        orderService.cancel(id);
+    public String cancelOrder(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            orderService.cancel(id);
+            redirectAttributes.addFlashAttribute("success", "Заказ отменён");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/orders/my";
     }
-
-
 }

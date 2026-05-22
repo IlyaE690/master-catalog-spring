@@ -8,6 +8,9 @@
             <#if error??>
                 <div class="alert alert-danger">${error}</div>
             </#if>
+            <#if registered??>
+                <div class="alert alert-success">Регистрация успешна! Войдите в аккаунт.</div>
+            </#if>
 
             <form method="post" action="/login">
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>

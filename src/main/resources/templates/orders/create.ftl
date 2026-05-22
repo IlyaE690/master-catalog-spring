@@ -3,9 +3,15 @@
 
     <h2>Создать заказ</h2>
 
-    <form method="post" action="/orders/new" enctype="multipart/form-data">
+    <#if error??>
+        <div class="alert alert-danger">${error}</div>
+    </#if>
+
+    <form method="post" action="/orders/new" enctype="multipart/form-data" id="orderForm">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+
         <div class="mb-3">
-            <label for="specializationId" class="form-label">Тип услуги</label>
+            <label for="specializationId" class="form-label">Тип услуги <span class="text-danger">*</span></label>
             <select class="form-select" id="specializationId" name="specializationId" required>
                 <option value="">Выберите...</option>
                 <#list specializations as spec>
@@ -15,28 +21,27 @@
         </div>
 
         <div class="mb-3">
-            <label for="title" class="form-label">Заголовок</label>
+            <label for="title" class="form-label">Заголовок <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="title" name="title"
-                   placeholder="Починить слив в ванной" required>
+                   placeholder="" required>
         </div>
 
         <div class="mb-3">
-            <label for="description" class="form-label">Описание</label>
+            <label for="description" class="form-label">Описание <span class="text-danger">*</span></label>
             <textarea class="form-control" id="description" name="description"
-                      rows="4" placeholder="Подробно опишите проблему"></textarea>
+                      rows="4" placeholder="Подробно опишите проблему" required></textarea>
         </div>
 
         <div class="mb-3">
-            <label for="address" class="form-label">Адрес</label>
+            <label for="address" class="form-label">Адрес <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="address" name="address"
-                   placeholder="ул. Ленина 5, кв 42, 3 этаж, домофон 12" required>
+                   placeholder="" required>
         </div>
 
         <div class="mb-3">
-            <label for="scheduledDate" class="form-label">Желаемая дата</label>
+            <label for="scheduledDate" class="form-label">Желаемая дата <span class="text-danger">*</span></label>
             <input type="datetime-local" class="form-control" id="scheduledDate" name="scheduledDate" required>
         </div>
-
 
         <div class="mb-3">
             <label for="minRating" class="form-label">Минимальный рейтинг мастера</label>
@@ -48,29 +53,44 @@
             </select>
         </div>
 
-        <button type="button" id="aiSuggestBtn" class="btn btn-outline-secondary mb-3">Подобрать мастера с ИИ</button>
-        <div id="aiBox" class="alert alert-secondary" style="display:none;">
-            <p><strong>Сформированный промпт для ИИ:</strong></p>
-            <pre id="aiPrompt" ></pre>
-            <p class="mt-2"><strong>Подходящие мастера:</strong></p>
-            <ul id="aiMasters"></ul>
+        <button type="button" id="aiSuggestBtn" class="btn btn-outline-secondary mb-3">Найти подходящих мастеров</button>
+
+        <div id="aiMastersContainer" class="mt-3" style="display:none;">
+            <h5>Рекомендованные мастера</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Мастер</th>
+                        <th>Рейтинг</th>
+                        <th>Специализации</th>
+                        <th>Выполнено заказов</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody id="aiMastersList">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="aiBox" class="alert alert-info" style="display:none;">
+            <p><strong>Совет:</strong> Выберите мастера из списка выше, чтобы отправить заказ напрямую ему.</p>
         </div>
 
         <div class="mb-3">
             <label for="orderPhoto" class="form-label">Фото проблемы (опционально)</label>
             <input type="file" class="form-control" id="orderPhoto" name="orderPhoto" accept="image/*">
-            <small class="text-muted">При настройке Cloudinary фото будет загружено и прикреплено к заявке</small>
         </div>
 
-        <button type="submit" class="btn btn-primary">Создать заказ</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Создать заказ (без выбора мастера)</button>
     </form>
 
-    <div id="order-map" class="mt-3"></div>
-    <small class="text-muted">Карта по адресу заказа (Yandex Maps API)</small>
+    <div id="order-map" style="height: 400px; width: 100%; margin-top: 20px;"></div>
 
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=${yandexApiKey!""}"></script>
     <script src="/js/order-map.js"></script>
-
-
     <script src="/js/ai-order.js"></script>
+    <script src="/js/create-order.js"></script>
+
 </@layout.page>

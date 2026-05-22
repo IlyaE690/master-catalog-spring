@@ -3,7 +3,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Уведомления</h2>
-        <#if unreadCount > 0>
+        <#if unreadCount?? && unreadCount?number gt 0>
             <button class="btn btn-outline-primary btn-sm" onclick="markAllRead()">
                 Прочитать все (${unreadCount})
             </button>
@@ -20,7 +20,7 @@
                     <div class="d-flex justify-content-between">
                         <div>
                             <strong>${notification.title}</strong>
-                            <p class="mb-1">${notification.message}</p>
+                            <p class="mb-1">${notification.message!''}</p>
                             <small class="text-muted">${notification.createdAt?string("dd.MM.yyyy HH:mm")}</small>
                         </div>
                         <#if !notification.isRead>
@@ -39,11 +39,8 @@
         </div>
     </#if>
 
-    <#if !websocket_loaded?has_content>
-        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-        <#assign websocket_loaded = true in .globals>
-    </#if>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script src="/js/notifications.js"></script>
 
 </@layout.page>

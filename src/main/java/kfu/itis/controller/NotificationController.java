@@ -27,11 +27,14 @@ public class NotificationController {
 
     @GetMapping
     public String notifications(Model model, Principal principal) {
-        User user = userService.findByUsername(principal.getName()).orElseThrow();
+        User user = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         List<Notification> notifications = notificationService.findByUser(user);
+        List<Notification> unreadNotifications = notificationService.findUnreadByUser(user);
+
         model.addAttribute("notifications", notifications);
-        model.addAttribute("unreadCount", notificationService.findUnreadByUser(user));
+        model.addAttribute("unreadCount", unreadNotifications.size());
 
         return "notifications/list";
     }
@@ -46,7 +49,8 @@ public class NotificationController {
     @PostMapping("/read-all")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> markAllAsRead(Principal principal) {
-        User user = userService.findByUsername(principal.getName()).orElseThrow();
+        User user = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         notificationService.markAllAsRead(user);
         return ResponseEntity.ok(Map.of("success", true));
     }

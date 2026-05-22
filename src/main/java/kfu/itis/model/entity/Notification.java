@@ -3,6 +3,8 @@ package kfu.itis.model.entity;
 import jakarta.persistence.*;
 import kfu.itis.model.enums.NotificationType;
 import lombok.*;
+
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -13,7 +15,9 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Notification {
+public class Notification implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

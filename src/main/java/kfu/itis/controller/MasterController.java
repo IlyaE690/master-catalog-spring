@@ -25,7 +25,7 @@ public class MasterController {
         this.specializationService = specializationService;
     }
 
-    @GetMapping()
+    @GetMapping
     public String masters(@RequestParam(required = false) Long specializationId,
                           @RequestParam(required = false) Double minRating,
                           @RequestParam(required = false) String query,
@@ -35,13 +35,14 @@ public class MasterController {
 
         if (query != null && !query.isEmpty()) {
             masters = userService.findMastersByName(query);
-
         } else if (specializationId != null && minRating != null) {
             Specialization specialization = specializationService.findById(specializationId).orElseThrow();
             masters = userService.findMastersBySpecializationAndMinRating(specialization, minRating);
         } else if (specializationId != null) {
             Specialization specialization = specializationService.findById(specializationId).orElseThrow();
-            masters = userService.findAllMastersBySpecialization(specialization );
+            masters = userService.findAllMastersBySpecialization(specialization);
+        } else if (minRating != null) {
+            masters = userService.findMastersByMinRating(minRating);
         } else {
             masters = userService.findAllMasters();
         }
@@ -57,12 +58,9 @@ public class MasterController {
 
     @GetMapping("/{id}")
     public String masterDetails(@PathVariable Long id, Model model) {
-        User master = userService.findById(id).orElseThrow(() -> new RuntimeException("user not found"));
-
+        User master = userService.findByIdWithSpecializations(id)
+                .orElseThrow(() -> new RuntimeException("user not found"));
         model.addAttribute("master", master);
-
         return "masters/details";
     }
-
-
 }

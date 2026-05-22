@@ -18,9 +18,9 @@
         <div class="col-md-3">
             <select name="minRating" class="form-select">
                 <option value="">Любой рейтинг</option>
-                <option value="4.0" <#if minRating?? && minRating?string == "4.0">selected</#if>>От 4.0</option>
-                <option value="4.5" <#if minRating?? && minRating?string == "4.5">selected</#if>>От 4.5</option>
-                <option value="4.8" <#if minRating?? && minRating?string == "4.8">selected</#if>>От 4.8</option>
+                <option value="4.0" <#if minRating?? && minRating == 4.0>selected</#if>>От 4.0</option>
+                <option value="4.5" <#if minRating?? && minRating == 4.5>selected</#if>>От 4.5</option>
+                <option value="4.8" <#if minRating?? && minRating == 4.8>selected</#if>>От 4.8</option>
             </select>
         </div>
         <div class="col-md-3">
@@ -48,9 +48,13 @@
                             <p class="card-text">
                                 Рейтинг: ${master.rating}
                                 <br>
-                                <#list master.specializations as spec>
-                                    <span class="badge bg-secondary">${spec.name}</span>
-                                </#list>
+                                <#if master.specializations?? && master.specializations?size gt 0>
+                                    <#list master.specializations as spec>
+                                        <span class="badge bg-secondary">${spec.name}</span>
+                                    </#list>
+                                <#else>
+                                    <span class="text-muted">Нет специализаций</span>
+                                </#if>
                             </p>
                             <a href="/masters/${master.id}" class="btn btn-outline-primary btn-sm">Подробнее</a>
                         </div>

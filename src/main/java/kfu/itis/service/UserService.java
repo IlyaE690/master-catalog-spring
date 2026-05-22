@@ -11,6 +11,8 @@ public interface UserService {
 
     Optional<User> findById(Long id);
 
+    Optional<User> findByIdWithSpecializations(Long id);
+
     Optional<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);
@@ -22,6 +24,8 @@ public interface UserService {
     List<User> findMastersByName(String query);
 
     List<User> findMastersBySpecializationAndMinRating(Specialization specialization, Double minRating);
+
+    List<User> findMastersByMinRating(Double minRating);
 
     boolean existsByUsername(String username);
 

@@ -22,7 +22,12 @@
                             ${order.status}
                         </span>
                     </div>
-                    <small class="text-muted">${order.specialization.name} | ${order.createdAt}</small>
+                    <small class="text-muted">
+                        ${order.specialization.name}
+                        <#if order.createdAt??>
+                            | ${order.createdAt?string("dd.MM.yyyy HH:mm")}
+                        </#if>
+                    </small>
                 </a>
             </#list>
         </div>

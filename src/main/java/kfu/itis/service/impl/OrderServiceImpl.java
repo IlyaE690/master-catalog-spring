@@ -40,17 +40,16 @@ public class OrderServiceImpl implements OrderService {
         notificationService.create(notification);
     }
 
-
     private void recalculatePrice(Order order) {
         if (order.getSpecialization() == null) {
             return;
         }
 
-        boolean badWeather = weatherService.isBadWeatherNow();
+        boolean badWeather = weatherService.isBadWeather(order.getScheduledDate());
         double weatherCoefficient = 1.0;
 
         if (Boolean.TRUE.equals(order.getSpecialization().getWeatherDependent()) && badWeather) {
-            weatherCoefficient = weatherService.getWeatherCoefficientForOutdoorWorks();
+            weatherCoefficient = weatherService.getWeatherCoefficientForOutdoorWorks(order.getScheduledDate());
             if (order.getMaster() != null && order.getMaster().getBadWeatherPriceCoefficient() != null) {
                 weatherCoefficient *= order.getMaster().getBadWeatherPriceCoefficient();
             }
