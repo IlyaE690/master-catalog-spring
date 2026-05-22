@@ -15,6 +15,7 @@
                             <br><small>${order.specialization.name} | ${order.address}</small>
                         </div>
                         <form method="post" action="/orders/${order.id}/accept">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <button class="btn btn-primary btn-sm">Откликнуться</button>
                         </form>
                     </div>

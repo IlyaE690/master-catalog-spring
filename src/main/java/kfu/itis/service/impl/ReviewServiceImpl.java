@@ -4,6 +4,7 @@ import kfu.itis.model.entity.Order;
 import kfu.itis.model.entity.Review;
 import kfu.itis.model.entity.User;
 import kfu.itis.repository.ReviewRepository;
+import kfu.itis.repository.UserRepository;
 import kfu.itis.service.ReviewService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +16,11 @@ import java.util.Optional;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
 
-    public ReviewServiceImpl(ReviewRepository reviewRepository) {
+    public ReviewServiceImpl(ReviewRepository reviewRepository, UserRepository userRepository) {
         this.reviewRepository = reviewRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -41,7 +44,19 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public Review create(Review review) {
-        return reviewRepository.save(review);
+        Review saved = reviewRepository.save(review);
+        updateMasterRating(review.getTargetUser());
+        return saved;
+    }
+
+    private void updateMasterRating(User master) {
+        List<Review> reviews = reviewRepository.findByTargetUserOrderByCreatedAtDesc(master);
+        double averageRating = reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+        master.setRating(Math.round(averageRating * 100.0) / 100.0);
+        userRepository.save(master);
     }
 
     @Override
@@ -53,7 +68,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public void deleteById(Long id) {
-        reviewRepository.deleteById(id);
+        Review review = reviewRepository.findById(id).orElse(null);
+        if (review != null) {
+            User master = review.getTargetUser();
+            reviewRepository.deleteById(id);
+            updateMasterRating(master);
+        }
     }
-
 }

@@ -42,6 +42,7 @@
                     <td>${user.lastName!'-'}</td>
                     <td>
                         <form method="post" action="/admin/users/${user.id}/role" style="display: inline;">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <select name="role" class="form-select form-select-sm" style="width: auto; display: inline-block;">
                                 <#list roles as r>
                                     <option value="${r}" <#if user.role == r>selected</#if>>${r}</option>
@@ -51,18 +52,20 @@
                         </form>
                     </td>
                     <td>
-                            <span class="badge ${user.enabled?then('bg-success', 'bg-danger')}">
-                                ${user.enabled?then('Активен', 'Заблокирован')}
-                            </span>
+                        <span class="badge ${user.enabled?then('bg-success', 'bg-danger')}">
+                            ${user.enabled?then('Активен', 'Заблокирован')}
+                        </span>
                     </td>
                     <td>
                         <form method="post" action="/admin/users/${user.id}/block" style="display: inline;">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <button type="submit" class="btn btn-sm ${user.enabled?then('btn-warning', 'btn-success')}">
                                 ${user.enabled?then('Заблокировать', 'Разблокировать')}
                             </button>
                         </form>
                         <form method="post" action="/admin/users/${user.id}/delete" style="display: inline;"
                               onsubmit="return confirm('Удалить пользователя ${user.username}?')">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
                         </form>
                     </td>

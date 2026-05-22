@@ -9,7 +9,7 @@
             <p><strong>Специализация:</strong> ${order.specialization.name}</p>
             <p><strong>Адрес:</strong> ${order.address}</p>
             <p><strong>Описание:</strong> ${order.description!'-'}</p>
-            <p><strong>Дата:</strong> ${order.scheduledDate}</p>
+            <p><strong>Дата:</strong> ${order.scheduledDate?string("dd.MM.yyyy HH:mm")}</p>
             <#if order.price??>
                 <p><strong>Цена:</strong> ${order.price} ₽</p>
                 <#if priceInUsd?? && (priceInUsd > 0)>
@@ -30,18 +30,21 @@
     <div class="d-flex gap-2">
         <#if isCustomer && order.status == "NEW">
             <form method="post" action="/orders/${order.id}/cancel">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                 <button class="btn btn-danger">Отменить</button>
             </form>
         </#if>
 
         <#if isMaster && order.status == "ASSIGNED">
             <form method="post" action="/orders/${order.id}/start">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                 <button class="btn btn-primary">Начать работу</button>
             </form>
         </#if>
 
         <#if isMaster && order.status == "IN_PROGRESS">
             <form method="post" action="/orders/${order.id}/complete">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                 <button class="btn btn-success">Завершить</button>
             </form>
         </#if>

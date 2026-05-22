@@ -6,6 +6,8 @@
     <p><strong>Услуга:</strong> ${order.specialization.name}</p>
 
     <form method="post" action="/reviews/create/${order.id}">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+
         <div class="mb-3">
             <label for="rating" class="form-label">Оценка</label>
             <select class="form-select" id="rating" name="rating" required>

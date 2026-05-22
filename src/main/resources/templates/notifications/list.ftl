@@ -13,7 +13,7 @@
     <#if notifications?size == 0>
         <p>У вас пока нет уведомлений.</p>
     <#else>
-        <div class="list-group">
+        <div class="list-group" id="notificationsList">
             <#list notifications as notification>
                 <div class="list-group-item ${notification.isRead?then('', 'list-group-item-primary')}"
                      data-id="${notification.id}">
@@ -21,7 +21,7 @@
                         <div>
                             <strong>${notification.title}</strong>
                             <p class="mb-1">${notification.message}</p>
-                            <small class="text-muted">${notification.createdAt}</small>
+                            <small class="text-muted">${notification.createdAt?string("dd.MM.yyyy HH:mm")}</small>
                         </div>
                         <#if !notification.isRead>
                             <button class="btn btn-sm btn-outline-success" onclick="markRead(${notification.id})">
@@ -39,8 +39,11 @@
         </div>
     </#if>
 
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <#if !websocket_loaded?has_content>
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+        <#assign websocket_loaded = true in .globals>
+    </#if>
     <script src="/js/notifications.js"></script>
 
 </@layout.page>

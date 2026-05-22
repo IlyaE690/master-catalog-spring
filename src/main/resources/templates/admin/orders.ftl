@@ -41,6 +41,7 @@
                     <td>${order.master.username!'-'}</td>
                     <td>
                         <form method="post" action="/admin/orders/${order.id}/status" style="display: inline;">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <select name="status" class="form-select form-select-sm" style="width: auto; display: inline-block;">
                                 <#list statuses as s>
                                     <option value="${s}" <#if order.status == s>selected</#if>>${s}</option>
@@ -50,10 +51,11 @@
                         </form>
                     </td>
                     <td>${order.price!0} ₽</td>
-                    <td>${order.scheduledDate.toString()?substring(0, 10)}</td>
+                    <td>${order.scheduledDate?string("dd.MM.yyyy")}</td>
                     <td>
                         <form method="post" action="/admin/orders/${order.id}/delete" style="display: inline;"
                               onsubmit="return confirm('Удалить заказ #${order.id}?')">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
                         </form>
                     </td>

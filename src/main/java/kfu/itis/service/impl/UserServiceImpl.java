@@ -5,6 +5,7 @@ import kfu.itis.model.entity.User;
 import kfu.itis.model.enums.Role;
 import kfu.itis.repository.UserRepository;
 import kfu.itis.service.UserService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +80,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"popularMasters", "mastersByName"}, allEntries = true)
     public User save(User user) {
         return userRepository.save(user);
     }
@@ -97,6 +99,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"popularMasters", "mastersByName"}, allEntries = true)
     public void deleteById(Long id) {
         userRepository.deleteById(id);
     }

@@ -40,6 +40,28 @@ public class OrderServiceImpl implements OrderService {
         notificationService.create(notification);
     }
 
+
+    private void recalculatePrice(Order order) {
+        if (order.getSpecialization() == null) {
+            return;
+        }
+
+        boolean badWeather = weatherService.isBadWeatherNow();
+        double weatherCoefficient = 1.0;
+
+        if (Boolean.TRUE.equals(order.getSpecialization().getWeatherDependent()) && badWeather) {
+            weatherCoefficient = weatherService.getWeatherCoefficientForOutdoorWorks();
+            if (order.getMaster() != null && order.getMaster().getBadWeatherPriceCoefficient() != null) {
+                weatherCoefficient *= order.getMaster().getBadWeatherPriceCoefficient();
+            }
+        }
+
+        order.setWeatherCoefficient(weatherCoefficient);
+        if (order.getSpecialization().getBasePrice() != null) {
+            order.setPrice(order.getSpecialization().getBasePrice().multiply(BigDecimal.valueOf(weatherCoefficient)));
+        }
+    }
+
     @Override
     @Transactional(readOnly = true)
     public Optional<Order> findById(Long id) {
@@ -100,28 +122,14 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Order create(Order order) {
         order.setStatus(OrderStatus.NEW);
-
-        boolean badWeather = weatherService.isBadWeatherNow();
-        double weatherCoefficient = 1.0;
-
-        if (Boolean.TRUE.equals(order.getSpecialization().getWeatherDependent()) && badWeather) {
-            weatherCoefficient = weatherService.getWeatherCoefficientForOutdoorWorks();
-            if (order.getMaster() != null && order.getMaster().getBadWeatherPriceCoefficient() != null) {
-                weatherCoefficient *= order.getMaster().getBadWeatherPriceCoefficient();
-            }
-        }
-
-        order.setWeatherCoefficient(weatherCoefficient);
-        if (order.getPrice() == null && order.getSpecialization().getBasePrice() != null) {
-            order.setPrice(order.getSpecialization().getBasePrice().multiply(BigDecimal.valueOf(weatherCoefficient)));
-        }
-
+        recalculatePrice(order);
         return orderRepository.save(order);
     }
 
     @Override
     @Transactional
     public Order update(Order order) {
+        recalculatePrice(order);
         return orderRepository.save(order);
     }
 
@@ -132,6 +140,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new RuntimeException("Заказ не найден: " + orderId));
         order.setMaster(master);
         order.setStatus(OrderStatus.ASSIGNED);
+        recalculatePrice(order);
         Order saved = orderRepository.save(order);
 
         createNotification(order.getCustomer(),

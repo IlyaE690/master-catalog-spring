@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btn.addEventListener('click', async () => {
         const issueDescription = document.getElementById('description').value;
-        const specializationId = document.getElementById('specializationId').value;
-        const minRating = document.getElementById('minRating').value;
+        const specializationId = document.getElementById('specializationId')?.value;
+        const minRating = document.getElementById('minRating')?.value;
 
         if (!issueDescription) {
             alert('Заполните описание поломки');
@@ -13,10 +13,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+            const headers = {'Content-Type': 'application/json', 'Accept': 'application/json'};
+            if (csrfToken && csrfHeader) {
+                headers[csrfHeader] = csrfToken;
+            }
+
             const resp = await fetch('/api/orders/ai-suggest', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-                body: JSON.stringify({issueDescription, specializationId, minRating: minRating || null})
+                headers: headers,
+                body: JSON.stringify({issueDescription, specializationId: specializationId || null, minRating: minRating || null})
             });
 
             const data = await resp.json();
@@ -24,13 +31,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Не удалось получить рекомендации');
             }
 
-            document.getElementById('aiPrompt').textContent = data.prompt;
-            document.getElementById('aiMasters').innerHTML = (data.recommendedMasters || [])
-                .map(m => `<li>${m}</li>`)
+            const promptElement = document.getElementById('aiPrompt');
+            const mastersElement = document.getElementById('aiMasters');
+            const boxElement = document.getElementById('aiBox');
+
+            if (promptElement) promptElement.textContent = data.prompt;
+            if (mastersElement) mastersElement.innerHTML = (data.recommendedMasters || [])
+                .map(m => `<li>${escapeHtml(m)}</li>`)
                 .join('');
-            document.getElementById('aiBox').style.display = 'block';
+            if (boxElement) boxElement.style.display = 'block';
         } catch (e) {
             alert(e.message || 'Ошибка при AJAX-запросе');
         }
     });
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
 });

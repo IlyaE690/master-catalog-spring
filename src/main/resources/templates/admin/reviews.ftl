@@ -40,16 +40,17 @@
                             <#assign ratingClass = "bg-danger">
                         </#if>
                         <span class="badge ${ratingClass}">
-                                ${review.rating} ★
-                            </span>
+                            ${review.rating} ★
+                        </span>
                     </td>
                     <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
                         ${review.comment!'-'}
                     </td>
-                    <td>${review.createdAt.toString()?replace('T', ' ')?substring(0, 16)}</td>
+                    <td>${review.createdAt?string("dd.MM.yyyy HH:mm")}</td>
                     <td>
                         <form method="post" action="/admin/reviews/${review.id}/delete" style="display: inline;"
                               onsubmit="return confirm('Удалить этот отзыв?')">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
                         </form>
                     </td>

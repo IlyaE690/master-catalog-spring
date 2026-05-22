@@ -27,7 +27,8 @@ public class FavoriteController {
 
     @GetMapping
     public String favorites(Principal principal, Model model) {
-        User customer = userService.findByUsername(principal.getName()).orElseThrow();
+        User customer = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         List<FavoriteMaster> favorites = favoriteMasterService.findByCustomer(customer);
         model.addAttribute("favorites", favorites);
@@ -37,8 +38,16 @@ public class FavoriteController {
     @PostMapping("/add")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> add(@RequestParam Long masterId, Principal principal) {
-        User customer = userService.findByUsername(principal.getName()).orElseThrow();
-        User master = userService.findById(masterId).orElseThrow();
+        User customer = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        User master = userService.findById(masterId)
+                .orElseThrow(() -> new RuntimeException("Мастер не найден"));
+
+
+        if (master.getRole() != kfu.itis.model.enums.Role.MASTER) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Некорректный ID мастера"));
+        }
 
         if (favoriteMasterService.isFavorite(customer, master)) {
             return ResponseEntity.ok(Map.of("success", false, "message", "Уже в избранном"));
@@ -51,10 +60,13 @@ public class FavoriteController {
     @PostMapping("/remove")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> remove(@RequestParam Long masterId, Principal principal) {
-        User customer = userService.findByUsername(principal.getName()).orElseThrow();
-        User master = userService.findById(masterId).orElseThrow();
+        User customer = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        User master = userService.findById(masterId)
+                .orElseThrow(() -> new RuntimeException("Мастер не найден"));
+
         favoriteMasterService.remove(customer, master);
         return ResponseEntity.ok(Map.of("success", true, "message", "Удалено из избранного"));
     }
 }
-
