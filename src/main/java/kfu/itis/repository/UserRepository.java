@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByPhone(String phone);
+
     @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.specializations WHERE u.role = 'MASTER' ORDER BY u.rating DESC")
     List<User> findByRoleOrderByRatingDesc(Role role);
 

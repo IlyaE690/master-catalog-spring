@@ -9,7 +9,8 @@
             <p><strong>Специализация:</strong> ${order.specialization.name}</p>
             <p><strong>Адрес:</strong> ${order.address}</p>
             <p><strong>Описание:</strong> ${order.description!'-'}</p>
-            <p><strong>Дата:</strong> ${order.scheduledDate?string("dd.MM.yyyy HH:mm")}</p>
+            <p><strong>Дата:</strong> ${scheduledDateStr!'-'}</p>
+            <p><strong>Создан:</strong> ${createdAtStr!'-'}</p>
             <#if order.price??>
                 <p><strong>Цена:</strong> ${order.price} ₽</p>
                 <#if priceInUsd?? && (priceInUsd > 0)>
@@ -50,6 +51,6 @@
         </#if>
     </div>
 
-    <a href="javascript:history.back()" class="btn btn-secondary mt-3">Назад</a>
+    <button onclick="window.history.back()" class="btn btn-secondary mt-3">Назад</button>
 
 </@layout.page>

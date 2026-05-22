@@ -1,3 +1,66 @@
+window.selectMaster = function(masterId, specializationId, masterName) {
+    const title = document.getElementById('title');
+    const description = document.getElementById('description');
+    const address = document.getElementById('address');
+    const scheduledDate = document.getElementById('scheduledDate');
+
+    if (!title.value) {
+        alert('Заполните заголовок заказа');
+        return;
+    }
+    if (!description.value) {
+        alert('Заполните описание заказа');
+        return;
+    }
+    if (!address.value) {
+        alert('Заполните адрес');
+        return;
+    }
+    if (!scheduledDate.value) {
+        alert('Выберите дату');
+        return;
+    }
+
+    if (confirm(`Отправить заказ мастеру ${masterName}?`)) {
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        const formData = new FormData();
+        formData.append('specializationId', specializationId);
+        formData.append('masterId', masterId);
+        formData.append('title', title.value);
+        formData.append('description', description.value);
+        formData.append('address', address.value);
+        formData.append('scheduledDate', scheduledDate.value);
+
+        const photoInput = document.getElementById('orderPhoto');
+        if (photoInput && photoInput.files[0]) {
+            formData.append('orderPhoto', photoInput.files[0]);
+        }
+
+        const headers = {};
+        if (csrfToken && csrfHeader) {
+            headers[csrfHeader] = csrfToken;
+        }
+
+        fetch('/orders/create-with-master', {
+            method: 'POST',
+            headers: headers,
+            body: formData
+        }).then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                return response.json().then(data => {
+                    alert(data.error || 'Ошибка при создании заказа');
+                });
+            }
+        }).catch(err => {
+            alert('Ошибка: ' + err.message);
+        });
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('aiSuggestBtn');
     if (!btn) return;
@@ -51,10 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <td>${escapeHtml(master.specializations.join(', '))}</td>
                             <td>${master.completedOrdersCount} заказов</td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-success" onclick="selectMaster(${master.id}, ${data.specializationId}, '${escapeHtml(master.fullName)}')">
+                                <button type="button" class="btn btn-sm btn-success" onclick="selectMaster(${master.id}, ${data.specializationId}, '${escapeHtml(master.fullName).replace(/'/g, "\\'")}')">
                                     Выбрать
                                 </button>
-                            </td>
+                             </td>
                         `;
                         mastersList.appendChild(row);
                     });
@@ -70,69 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(e.message || 'Ошибка при AJAX-запросе');
         }
     });
-
-    window.selectMaster = function(masterId, specializationId, masterName) {
-        const title = document.getElementById('title');
-        const description = document.getElementById('description');
-        const address = document.getElementById('address');
-        const scheduledDate = document.getElementById('scheduledDate');
-
-        if (!title.value) {
-            alert('Заполните заголовок заказа');
-            return;
-        }
-        if (!description.value) {
-            alert('Заполните описание заказа');
-            return;
-        }
-        if (!address.value) {
-            alert('Заполните адрес');
-            return;
-        }
-        if (!scheduledDate.value) {
-            alert('Выберите дату');
-            return;
-        }
-
-        if (confirm(`Отправить заказ мастеру ${masterName}?`)) {
-            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
-
-            const formData = new FormData();
-            formData.append('specializationId', specializationId);
-            formData.append('masterId', masterId);
-            formData.append('title', title.value);
-            formData.append('description', description.value);
-            formData.append('address', address.value);
-            formData.append('scheduledDate', scheduledDate.value);
-
-            const photoInput = document.getElementById('orderPhoto');
-            if (photoInput && photoInput.files[0]) {
-                formData.append('orderPhoto', photoInput.files[0]);
-            }
-
-            const headers = {};
-            if (csrfToken && csrfHeader) {
-                headers[csrfHeader] = csrfToken;
-            }
-
-            fetch('/orders/create-with-master', {
-                method: 'POST',
-                headers: headers,
-                body: formData
-            }).then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    return response.json().then(data => {
-                        alert(data.error || 'Ошибка при создании заказа');
-                    });
-                }
-            }).catch(err => {
-                alert('Ошибка: ' + err.message);
-            });
-        }
-    };
 
     function escapeHtml(str) {
         if (!str) return '';

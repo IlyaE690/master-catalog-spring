@@ -40,12 +40,15 @@
             <ul class="navbar-nav">
                 <#if Session.SPRING_SECURITY_CONTEXT??>
                     <li class="nav-item">
-                        <a class="nav-link" href="/notifications">
-                            Уведомления
-                        </a>
+                        <a class="nav-link" href="/notifications">Уведомления</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/logout">Выйти</a>
+                        <form method="post" action="/logout" style="display: inline;">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-link nav-link" style="display: inline; padding: 8px 16px; margin: 0; border: none; background: none; color: rgba(255,255,255,0.85);">
+                                Выйти
+                            </button>
+                        </form>
                     </li>
                 <#else>
                     <li class="nav-item">

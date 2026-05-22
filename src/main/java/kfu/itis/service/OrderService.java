@@ -47,4 +47,6 @@ public interface OrderService {
     List<Order> findAllByStatus(OrderStatus status);
 
     void deleteById(Long id);
+
+    Optional<Order> findByIdWithDetails(Long id);
 }

@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self'; " +
-                                        "script-src 'self' https://cdn.jsdelivr.net https://api-maps.yandex.ru; " +
+                                        "script-src 'self' https://cdn.jsdelivr.net https://api-maps.yandex.ru https://cdn.sockjs.org https://cdnjs.cloudflare.com; " +
                                         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
                                         "img-src 'self' data: https:; " +
                                         "connect-src 'self'; frame-ancestors 'none';"
@@ -56,15 +56,17 @@ public class SecurityConfig {
                                 "/orders/{id}",
                                 "/favorites/**",
                                 "/reviews/create/**",
-                                "/api/orders/ai-suggest"
-                        ).hasRole("CUSTOMER")
+                                "/api/orders/ai-suggest",
+                                "/api/orders",
+                                "/api/orders/available"
+                        ).hasAnyRole("CUSTOMER", "MASTER", "ADMIN")
                         .requestMatchers(
                                 "/orders/available",
                                 "/orders/assigned",
                                 "/orders/{id}/accept",
                                 "/orders/{id}/start",
                                 "/orders/{id}/complete"
-                        ).hasRole("MASTER")
+                        ).hasAnyRole("MASTER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

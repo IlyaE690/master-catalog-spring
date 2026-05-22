@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface FavoriteMasterService {
 
-    List<FavoriteMaster> findByCustomer(User customer);
+    List<FavoriteMaster> findByCustomerWithDetails(User customer);
 
     boolean isFavorite(User customer, User master);
 

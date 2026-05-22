@@ -2,6 +2,7 @@ package kfu.itis.controller;
 
 import kfu.itis.model.entity.FavoriteMaster;
 import kfu.itis.model.entity.User;
+import kfu.itis.model.enums.Role;
 import kfu.itis.service.FavoriteMasterService;
 import kfu.itis.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +32,7 @@ public class FavoriteController {
         User customer = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
-        List<FavoriteMaster> favorites = favoriteMasterService.findByCustomer(customer);
+        List<FavoriteMaster> favorites = favoriteMasterService.findByCustomerWithDetails(customer);
         model.addAttribute("favorites", favorites);
         return "favorites/list";
     }
@@ -38,28 +40,37 @@ public class FavoriteController {
     @PostMapping("/add")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> add(@RequestParam Long masterId, Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+
         User customer = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         User master = userService.findById(masterId)
                 .orElseThrow(() -> new RuntimeException("Мастер не найден"));
 
-
-        if (master.getRole() != kfu.itis.model.enums.Role.MASTER) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Некорректный ID мастера"));
+        if (master.getRole() != Role.MASTER) {
+            response.put("success", false);
+            response.put("message", "Некорректный ID мастера");
+            return ResponseEntity.badRequest().body(response);
         }
 
         if (favoriteMasterService.isFavorite(customer, master)) {
-            return ResponseEntity.ok(Map.of("success", false, "message", "Уже в избранном"));
+            response.put("success", false);
+            response.put("message", "Мастер уже в избранном");
+            return ResponseEntity.ok(response);
+        } else {
+            favoriteMasterService.add(customer, master, null);
+            response.put("success", true);
+            response.put("message", "Мастер добавлен в избранное");
+            return ResponseEntity.ok(response);
         }
-
-        favoriteMasterService.add(customer, master, null);
-        return ResponseEntity.ok(Map.of("success", true, "message", "Добавлено в избранное"));
     }
 
     @PostMapping("/remove")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> remove(@RequestParam Long masterId, Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+
         User customer = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
@@ -67,6 +78,8 @@ public class FavoriteController {
                 .orElseThrow(() -> new RuntimeException("Мастер не найден"));
 
         favoriteMasterService.remove(customer, master);
-        return ResponseEntity.ok(Map.of("success", true, "message", "Удалено из избранного"));
+        response.put("success", true);
+        response.put("message", "Мастер удалён из избранного");
+        return ResponseEntity.ok(response);
     }
 }

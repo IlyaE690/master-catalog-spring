@@ -1,6 +1,10 @@
 async function addToFavorites(masterId) {
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+    const formData = new URLSearchParams();
+    formData.append('masterId', masterId);
+
     const headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
     };
@@ -12,11 +16,13 @@ async function addToFavorites(masterId) {
         const response = await fetch('/favorites/add', {
             method: 'POST',
             headers: headers,
-            body: 'masterId=' + masterId
+            body: formData.toString()
         });
+
         const data = await response.json();
         if (data.success) {
             alert(data.message);
+            location.reload();
         } else {
             alert(data.message || 'Ошибка при добавлении в избранное');
         }
@@ -29,6 +35,10 @@ async function addToFavorites(masterId) {
 async function removeFromFavorites(masterId) {
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+    const formData = new URLSearchParams();
+    formData.append('masterId', masterId);
+
     const headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
     };
@@ -40,11 +50,18 @@ async function removeFromFavorites(masterId) {
         const response = await fetch('/favorites/remove', {
             method: 'POST',
             headers: headers,
-            body: 'masterId=' + masterId
+            body: formData.toString()
         });
+
         const data = await response.json();
         if (data.success) {
-            location.reload();
+            alert(data.message);
+            const element = document.getElementById('favorite-' + masterId);
+            if (element) {
+                element.remove();
+            } else {
+                location.reload();
+            }
         } else {
             alert(data.message || 'Ошибка при удалении из избранного');
         }

@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.security.Principal;
 
 @Controller
@@ -161,10 +162,14 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public String orderDetails(@PathVariable Long id, Model model, Principal principal) {
-        Order order = orderService.findById(id)
+        Order order = orderService.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Заказ не найден"));
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
         model.addAttribute("order", order);
+        model.addAttribute("scheduledDateStr", order.getScheduledDate() != null ? order.getScheduledDate().format(formatter) : "");
+        model.addAttribute("createdAtStr", order.getCreatedAt() != null ? order.getCreatedAt().format(formatter) : "");
         model.addAttribute("isCustomer", order.getCustomer().getUsername().equals(principal.getName()));
         model.addAttribute("isMaster", order.getMaster() != null && order.getMaster().getUsername().equals(principal.getName()));
 

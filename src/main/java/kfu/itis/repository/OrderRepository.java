@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, CustomOrderRepository {
@@ -49,4 +50,11 @@ public interface OrderRepository extends JpaRepository<Order, Long>, CustomOrder
             "GROUP BY o.master " +
             "HAVING AVG(o.price) > (SELECT AVG(o2.price) FROM Order o2 WHERE o2.master IS NOT NULL)")
     List<User> findHighCostMasters();
+
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.customer " +
+            "LEFT JOIN FETCH o.master " +
+            "LEFT JOIN FETCH o.specialization " +
+            "WHERE o.id = :id")
+    Optional<Order> findByIdWithDetails(@Param("id") Long id);
 }

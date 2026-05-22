@@ -223,4 +223,10 @@ public class OrderServiceImpl implements OrderService {
     public void deleteById(Long id) {
         orderRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Order> findByIdWithDetails(Long id) {
+        return orderRepository.findByIdWithDetails(id);
+    }
 }

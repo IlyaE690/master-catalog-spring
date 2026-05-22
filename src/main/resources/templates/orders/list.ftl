@@ -25,7 +25,7 @@
                     <small class="text-muted">
                         ${order.specialization.name}
                         <#if order.createdAt??>
-                            | ${order.createdAt?string("dd.MM.yyyy HH:mm")}
+                            | ${order.createdAt}
                         </#if>
                     </small>
                 </a>

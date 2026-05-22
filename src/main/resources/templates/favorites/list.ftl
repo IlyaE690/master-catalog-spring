@@ -9,7 +9,7 @@
     <#else>
         <div class="list-group">
             <#list favorites as fav>
-                <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="list-group-item d-flex justify-content-between align-items-center" id="favorite-${fav.master.id}">
                     <div>
                         <strong>
                             <a href="/masters/${fav.master.id}">
@@ -18,7 +18,7 @@
                         </strong>
                         <br>
                         <small>
-                            ${fav.master.rating}
+                            Рейтинг: ${fav.master.rating}
                             <#if fav.note??><br>${fav.note}</#if>
                         </small>
                     </div>

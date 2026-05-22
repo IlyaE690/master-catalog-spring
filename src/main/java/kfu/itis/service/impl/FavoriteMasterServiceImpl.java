@@ -20,8 +20,13 @@ public class FavoriteMasterServiceImpl implements FavoriteMasterService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FavoriteMaster> findByCustomer(User customer) {
-        return favoriteMasterRepository.findByCustomer(customer);
+    public List<FavoriteMaster> findByCustomerWithDetails(User customer) {
+        List<FavoriteMaster> favorites = favoriteMasterRepository.findByCustomer(customer);
+        for (FavoriteMaster fav : favorites) {
+            fav.getMaster().getFirstName();
+            fav.getMaster().getSpecializations().size();
+        }
+        return favorites;
     }
 
     @Override
