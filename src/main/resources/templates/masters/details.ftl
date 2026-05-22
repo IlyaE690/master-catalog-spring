@@ -41,7 +41,7 @@
                                         <#list review.rating+1..5 as i>☆</#list>
                                     </span>
                                 </div>
-                                <small class="text-muted">${review.createdAt?string("dd.MM.yyyy")}</small>
+                                <small class="text-muted">${review.createdAt}</small>
                             </div>
                             <#if review.comment?? && review.comment?has_content>
                                 <p class="mb-0 mt-2">"${review.comment}"</p>

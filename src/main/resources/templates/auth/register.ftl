@@ -61,7 +61,7 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="specializationIds" value="${spec.id}" id="spec_${spec.id}">
                                     <label class="form-check-label" for="spec_${spec.id}">
-                                        ${spec.name} (${spec.basePrice} ₽)
+                                        ${spec.name} (от ${spec.basePrice} ₽)
                                     </label>
                                 </div>
                             </div>
@@ -79,31 +79,6 @@
         </div>
     </div>
 
-    <script>
-        var roleSelect = document.getElementById('role');
-        var specializationsBlock = document.getElementById('specializationsBlock');
-
-        function toggleSpecializations() {
-            if (roleSelect.value === 'MASTER') {
-                specializationsBlock.style.display = 'block';
-            } else {
-                specializationsBlock.style.display = 'none';
-            }
-        }
-
-        roleSelect.addEventListener('change', toggleSpecializations);
-
-        toggleSpecializations();
-
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            if (roleSelect.value === 'MASTER') {
-                var checkedBoxes = document.querySelectorAll('input[name="specializationIds"]:checked');
-                if (checkedBoxes.length === 0) {
-                    e.preventDefault();
-                    document.getElementById('specializationsError').style.display = 'block';
-                }
-            }
-        });
-    </script>
+    <script src="/js/register.js"></script>
 
 </@layout.page>

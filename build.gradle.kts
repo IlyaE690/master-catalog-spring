@@ -61,6 +61,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
 
+    implementation("com.cloudinary:cloudinary-http5:2.0.0")
+
 }
 
 val openApiSpec = "$projectDir/src/main/resources/api.yaml"
