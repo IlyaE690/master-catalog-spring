@@ -51,6 +51,8 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+
     implementation("io.swagger.core.v3:swagger-annotations:2.2.25")
 
     compileOnly("org.projectlombok:lombok")

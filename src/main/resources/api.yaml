@@ -11,6 +11,10 @@ tags:
     description: Управление специализациями
   - name: order
     description: Управление заказами
+  - name: ai
+    description: AI рекомендации мастеров
+  - name: validation
+    description: Валидация данных при регистрации
 
 paths:
   /api/specializations:
@@ -30,7 +34,7 @@ paths:
     post:
       tags: [ specialization ]
       operationId: createSpecialization
-      summary: Создать специализацию
+      summary: Создать специализацию (требуется ADMIN)
       requestBody:
         required: true
         content:
@@ -40,6 +44,12 @@ paths:
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecializationResponse"
+        "403":
+          description: Forbidden - требуется роль ADMIN
 
   /api/specializations/{id}:
     get:
@@ -51,12 +61,16 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecializationResponse"
         "404":
           description: Not Found
     put:
       tags: [ specialization ]
       operationId: updateSpecialization
-      summary: Обновить специализацию
+      summary: Обновить специализацию (требуется ADMIN)
       parameters:
         - $ref: "#/components/parameters/IdParam"
       requestBody:
@@ -68,12 +82,16 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecializationResponse"
         "404":
           description: Not Found
     delete:
       tags: [ specialization ]
       operationId: deleteSpecialization
-      summary: Удалить специализацию
+      summary: Удалить специализацию (требуется ADMIN)
       parameters:
         - $ref: "#/components/parameters/IdParam"
       responses:
@@ -86,7 +104,9 @@ paths:
     get:
       tags: [ order ]
       operationId: getOrders
-      summary: Получить заказы пользователя
+      summary: Получить заказы текущего пользователя (как клиент)
+      security:
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -96,10 +116,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/OrderResponse"
+        "401":
+          description: Unauthorized
     post:
       tags: [ order ]
       operationId: createOrder
-      summary: Создать заказ
+      summary: Создать новый заказ (требуется CUSTOMER)
+      security:
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -109,23 +133,39 @@ paths:
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
 
   /api/orders/{id}:
     get:
       tags: [ order ]
       operationId: getOrderById
       summary: Получить заказ по ID
+      security:
+        - cookieAuth: []
       parameters:
         - $ref: "#/components/parameters/IdParam"
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
         "404":
           description: Not Found
     put:
       tags: [ order ]
       operationId: updateOrder
-      summary: Обновить заказ
+      summary: Обновить заказ (только для клиента, пока статус NEW)
+      security:
+        - cookieAuth: []
       parameters:
         - $ref: "#/components/parameters/IdParam"
       requestBody:
@@ -137,21 +177,35 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
     delete:
       tags: [ order ]
       operationId: cancelOrder
-      summary: Отменить заказ
+      summary: Отменить заказ (только для клиента)
+      security:
+        - cookieAuth: []
       parameters:
         - $ref: "#/components/parameters/IdParam"
       responses:
         "204":
           description: No Content
+        "404":
+          description: Not Found
 
   /api/orders/{id}/status:
     patch:
       tags: [ order ]
       operationId: updateOrderStatus
-      summary: Изменить статус заказа
+      summary: Изменить статус заказа (для мастера)
+      security:
+        - cookieAuth: []
       parameters:
         - $ref: "#/components/parameters/IdParam"
       requestBody:
@@ -163,12 +217,24 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
 
   /api/orders/available:
     get:
       tags: [ order ]
       operationId: getAvailableOrders
-      summary: Доступные заказы для мастера
+      summary: Получить доступные заказы для мастера (по его специализациям)
+      security:
+        - cookieAuth: []
       responses:
         "200":
           description: OK
@@ -178,6 +244,74 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/OrderResponse"
+        "401":
+          description: Unauthorized (требуется роль MASTER)
+
+  /api/orders/ai-suggest:
+    post:
+      tags: [ ai ]
+      operationId: aiSuggestMaster
+      summary: AI подбор мастера по описанию проблемы
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiSuggestionRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiSuggestionResponse"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+
+  /api/validate/username:
+    get:
+      tags: [ validation ]
+      operationId: checkUsername
+      summary: Проверить, свободен ли username
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Проверяемый логин
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResponse"
+
+  /api/validate/email:
+    get:
+      tags: [ validation ]
+      operationId: checkEmail
+      summary: Проверить, свободен ли email
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+          description: Проверяемый email
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResponse"
 
 components:
   parameters:
@@ -189,6 +323,13 @@ components:
         type: integer
         format: int64
 
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+      description: Session cookie после входа через /login
+
   schemas:
     SpecializationResponse:
       type: object
@@ -197,15 +338,20 @@ components:
         id:
           type: integer
           format: int64
+          example: 1
         name:
           type: string
+          example: "Сантехник"
         description:
           type: string
+          example: "Ремонт и установка сантехники"
         basePrice:
           type: number
           format: double
+          example: 2500
         weatherDependent:
           type: boolean
+          example: false
 
     CreateSpecializationRequest:
       type: object
@@ -213,12 +359,16 @@ components:
       properties:
         name:
           type: string
+          example: "Электрик"
         description:
           type: string
+          example: "Ремонт проводки и электрооборудования"
         basePrice:
           type: number
+          example: 3000
         weatherDependent:
           type: boolean
+          example: false
 
     UpdateSpecializationRequest:
       type: object
@@ -247,10 +397,13 @@ components:
           type: string
         status:
           type: string
+          enum: [ NEW, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED ]
         price:
           type: number
+          format: double
         weatherCoefficient:
           type: number
+          format: double
         scheduledDate:
           type: string
           format: date-time
@@ -260,6 +413,23 @@ components:
         completedAt:
           type: string
           format: date-time
+        customerId:
+          type: integer
+          format: int64
+        customerUsername:
+          type: string
+        masterId:
+          type: integer
+          format: int64
+          nullable: true
+        masterUsername:
+          type: string
+          nullable: true
+        specializationId:
+          type: integer
+          format: int64
+        specializationName:
+          type: string
 
     CreateOrderRequest:
       type: object
@@ -267,15 +437,26 @@ components:
       properties:
         specializationId:
           type: integer
+          format: int64
+          example: 1
+        targetMasterId:
+          type: integer
+          format: int64
+          nullable: true
+          description: "ID конкретного мастера (если есть предпочтение)"
         title:
           type: string
+          example: "Починить кран"
         description:
           type: string
+          example: "Капает вода из-под ручки"
         address:
           type: string
+          example: "Казань, ул. Баумана, 10"
         scheduledDate:
           type: string
           format: date-time
+          example: "2026-06-25T14:00:00"
 
     UpdateOrderRequest:
       type: object
@@ -294,3 +475,44 @@ components:
         status:
           type: string
           enum: [ ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED ]
+
+    AiSuggestionRequest:
+      type: object
+      properties:
+        issueDescription:
+          type: string
+          description: "Описание проблемы"
+          example: "Капает вода из крана, течет унитаз"
+        specializationId:
+          type: integer
+          format: int64
+          nullable: true
+          description: "ID специализации (опционально, если не указан - определится автоматически)"
+        minRating:
+          type: number
+          format: double
+          nullable: true
+          description: "Минимальный рейтинг мастера"
+          example: 4.5
+
+    AiSuggestionResponse:
+      type: object
+      properties:
+        prompt:
+          type: string
+          description: "Сформированный промпт для AI"
+        recommendedMasters:
+          type: array
+          items:
+            type: string
+          description: "Список рекомендованных мастеров"
+        specialization:
+          type: string
+          description: "Определённая специализация"
+
+    ValidationResponse:
+      type: object
+      properties:
+        exists:
+          type: boolean
+          description: "true - имя занято, false - свободно"

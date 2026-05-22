@@ -43,4 +43,17 @@ public class ReviewServiceImpl implements ReviewService {
     public Review create(Review review) {
         return reviewRepository.save(review);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Review> findAll() {
+        return reviewRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(Long id) {
+        reviewRepository.deleteById(id);
+    }
+
 }

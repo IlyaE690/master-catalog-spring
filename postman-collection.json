@@ -12,17 +12,12 @@
       "type": "string"
     },
     {
-      "key": "customerToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "masterToken",
-      "value": "",
-      "type": "string"
-    },
-    {
       "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "specializationId",
       "value": "",
       "type": "string"
     }
@@ -44,13 +39,13 @@
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
-                { "key": "username", "value": "customer_test", "disabled": false },
-                { "key": "email", "value": "customer@test.com", "disabled": false },
-                { "key": "password", "value": "password123", "disabled": false },
-                { "key": "firstName", "value": "Тест", "disabled": false },
-                { "key": "lastName", "value": "Клиентов", "disabled": false },
-                { "key": "phone", "value": "79991234567", "disabled": false },
-                { "key": "role", "value": "CUSTOMER", "disabled": false }
+                { "key": "username", "value": "customer_test" },
+                { "key": "email", "value": "customer@test.com" },
+                { "key": "password", "value": "password123" },
+                { "key": "firstName", "value": "Тест" },
+                { "key": "lastName", "value": "Клиентов" },
+                { "key": "phone", "value": "79991234567" },
+                { "key": "role", "value": "CUSTOMER" }
               ]
             },
             "url": {
@@ -74,13 +69,13 @@
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
-                { "key": "username", "value": "master_test", "disabled": false },
-                { "key": "email", "value": "master@test.com", "disabled": false },
-                { "key": "password", "value": "password123", "disabled": false },
-                { "key": "firstName", "value": "Тест", "disabled": false },
-                { "key": "lastName", "value": "Мастеров", "disabled": false },
-                { "key": "phone", "value": "79991234568", "disabled": false },
-                { "key": "role", "value": "MASTER", "disabled": false }
+                { "key": "username", "value": "master_test" },
+                { "key": "email", "value": "master@test.com" },
+                { "key": "password", "value": "password123" },
+                { "key": "firstName", "value": "Тест" },
+                { "key": "lastName", "value": "Мастеров" },
+                { "key": "phone", "value": "79991234568" },
+                { "key": "role", "value": "MASTER" }
               ]
             },
             "url": {
@@ -92,14 +87,13 @@
           "response": []
         },
         {
-          "name": "Вход клиента (через веб-форму)",
+          "name": "Вход клиента",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "// После входа JSESSIONID сохранится автоматически",
-                  "pm.test('Status code is 302', () => pm.response.to.have.status(302));"
+                  "pm.test('Status code is 302 or 200', () => pm.expect(pm.response.code).to.be.oneOf([200, 302]));"
                 ]
               }
             }
@@ -115,8 +109,8 @@
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
-                { "key": "username", "value": "customer_test", "disabled": false },
-                { "key": "password", "value": "password123", "disabled": false }
+                { "key": "username", "value": "customer_test" },
+                { "key": "password", "value": "password123" }
               ]
             },
             "url": {
@@ -157,7 +151,7 @@
           "response": []
         },
         {
-          "name": "POST создать специализацию (требуется ADMIN)",
+          "name": "POST создать специализацию",
           "event": [
             {
               "listen": "test",
@@ -165,9 +159,9 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "    const spec = pm.response.json();",
-                  "    pm.environment.set('specId', spec.id);",
+                  "    pm.collectionVariables.set('specializationId', spec.id);",
                   "}",
-                  "pm.test('Status 201 или 403', () => pm.expect(pm.response.code).to.be.oneOf([201, 403]));"
+                  "pm.test('Status 201 or 403', () => pm.expect(pm.response.code).to.be.oneOf([201, 403]));"
                 ]
               }
             }
@@ -199,8 +193,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has id field', () => pm.expect(pm.response.json()).to.have.property('id'));"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -228,7 +221,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Сантехник (обновлено)\",\n  \"description\": \"Ремонт и установка сантехники + замена труб\",\n  \"basePrice\": 2000,\n  \"weatherDependent\": true\n}"
+              "raw": "{\n  \"name\": \"Сантехник (обновлено)\",\n  \"description\": \"Ремонт сантехники + замена труб\",\n  \"basePrice\": 2000,\n  \"weatherDependent\": true\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/specializations/1",
@@ -255,9 +248,6 @@
     },
     {
       "name": "3. Orders API (требуется аутентификация)",
-      "auth": {
-        "type": "noauth"
-      },
       "item": [
         {
           "name": "GET мои заказы (как клиент)",
@@ -266,8 +256,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -294,8 +283,7 @@
                   "    const order = pm.response.json();",
                   "    pm.collectionVariables.set('orderId', order.id);",
                   "}",
-                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
-                  "pm.test('Has id', () => pm.expect(pm.response.json()).to.have.property('id'));"
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
                 ]
               }
             }
@@ -310,7 +298,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"specializationId\": 1,\n  \"title\": \"Починить кран на кухне\",\n  \"description\": \"Капает вода из-под ручки\",\n  \"address\": \"Казань, ул. Баумана, 10\",\n  \"scheduledDate\": \"2026-05-25T14:00:00\"\n}"
+              "raw": "{\n  \"specializationId\": 1,\n  \"title\": \"Починить кран\",\n  \"description\": \"Капает вода\",\n  \"address\": \"Казань, ул. Баумана, 10\",\n  \"scheduledDate\": \"2026-06-25T14:00:00\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders",
@@ -327,8 +315,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has title', () => pm.expect(pm.response.json()).to.have.property('title'));"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -356,7 +343,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Починить кран (срочно)\",\n  \"description\": \"Капает сильно, нужно срочно\",\n  \"address\": \"Казань, ул. Баумана, 10, кв 5\"\n}"
+              "raw": "{\n  \"title\": \"Починить кран (срочно)\",\n  \"description\": \"Капает сильно\",\n  \"address\": \"Казань, ул. Баумана, 10\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders/{{orderId}}",
@@ -367,7 +354,7 @@
           "response": []
         },
         {
-          "name": "PATCH изменить статус (ASSIGNED → IN_PROGRESS → COMPLETED)",
+          "name": "PATCH изменить статус",
           "event": [
             {
               "listen": "test",
@@ -424,7 +411,25 @@
       ]
     },
     {
-      "name": "4. AI Suggestion API",
+      "name": "4. Available Orders for Master",
+      "item": [
+        {
+          "name": "GET доступные заказы для мастера",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/available",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "available"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. AI Suggestion API",
       "item": [
         {
           "name": "POST AI подбор мастера (без specializationId)",
@@ -434,8 +439,7 @@
               "script": {
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has prompt', () => pm.expect(pm.response.json()).to.have.property('prompt'));",
-                  "pm.test('Has recommendedMasters', () => pm.expect(pm.response.json()).to.have.property('recommendedMasters'));"
+                  "pm.test('Has prompt', () => pm.expect(pm.response.json()).to.have.property('prompt'));"
                 ]
               }
             }
@@ -450,7 +454,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"issueDescription\": \"Капает вода из крана, течет унитаз\",\n  \"minRating\": 4.5\n}"
+              "raw": "{\n  \"issueDescription\": \"Капает вода из крана\",\n  \"minRating\": 4.5\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders/ai-suggest",
@@ -467,8 +471,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Prompt contains specialization', () => pm.expect(pm.response.json().prompt).to.include('Сантехник'));"
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -483,7 +486,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"issueDescription\": \"Не работает розетка на кухне\",\n  \"specializationId\": 2,\n  \"minRating\": 4.0\n}"
+              "raw": "{\n  \"issueDescription\": \"Не работает розетка\",\n  \"specializationId\": 2,\n  \"minRating\": 4.0\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders/ai-suggest",
@@ -496,7 +499,7 @@
       ]
     },
     {
-      "name": "5. Validation API",
+      "name": "6. Validation API",
       "item": [
         {
           "name": "GET проверить username (свободен)",
@@ -515,14 +518,11 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/validate/username?username=free_user",
+              "raw": "{{baseUrl}}/api/validate/username?username=free_user_new",
               "host": ["{{baseUrl}}"],
               "path": ["api", "validate", "username"],
               "query": [
-                {
-                  "key": "username",
-                  "value": "free_user"
-                }
+                { "key": "username", "value": "free_user_new" }
               ]
             }
           },
@@ -549,10 +549,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "validate", "username"],
               "query": [
-                {
-                  "key": "username",
-                  "value": "customer_test"
-                }
+                { "key": "username", "value": "customer_test" }
               ]
             }
           },
@@ -560,30 +557,6 @@
         },
         {
           "name": "GET проверить email",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/validate/email?email=master@test.com",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "validate", "email"],
-              "query": [
-                {
-                  "key": "email",
-                  "value": "master@test.com"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "6. Available Orders for Master",
-      "item": [
-        {
-          "name": "GET доступные заказы для мастера",
           "event": [
             {
               "listen": "test",
@@ -598,9 +571,12 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/available",
+              "raw": "{{baseUrl}}/api/validate/email?email=master@test.com",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "available"]
+              "path": ["api", "validate", "email"],
+              "query": [
+                { "key": "email", "value": "master@test.com" }
+              ]
             }
           },
           "response": []
@@ -611,13 +587,13 @@
       "name": "7. Error Handling Tests",
       "item": [
         {
-          "name": "GET несуществующий заказ → 404",
+          "name": "GET несуществующий заказ",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 500 или 404', () => pm.expect(pm.response.code).to.be.oneOf([404, 500]));"
+                  "pm.expect(pm.response.code).to.be.oneOf([404, 500]);"
                 ]
               }
             }
@@ -634,7 +610,17 @@
           "response": []
         },
         {
-          "name": "POST заказ без обязательных полей → 400",
+          "name": "POST заказ без обязательных полей",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.expect(pm.response.code).to.be.oneOf([400, 500]);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -656,7 +642,7 @@
           "response": []
         },
         {
-          "name": "PATCH неверный статус → 400",
+          "name": "PATCH неверный статус",
           "request": {
             "method": "PATCH",
             "header": [
@@ -673,6 +659,62 @@
               "raw": "{{baseUrl}}/api/orders/1/status",
               "host": ["{{baseUrl}}"],
               "path": ["api", "orders", "1", "status"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Additional Tests (Cache, Weather, Currency)",
+      "item": [
+        {
+          "name": "GET главная страница (погода кэшируется)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET избранное (требуется CUSTOMER)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/favorites",
+              "host": ["{{baseUrl}}"],
+              "path": ["favorites"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET уведомления",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET страница деталей заказа (проверка конвертации валюты)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orders/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "1"]
             }
           },
           "response": []

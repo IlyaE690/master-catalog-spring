@@ -16,4 +16,8 @@ public interface ReviewService {
     List<Review> findByAuthor(User author);
 
     Review create(Review review);
+
+    List<Review> findAll();
+
+    void deleteById(Long id);
 }

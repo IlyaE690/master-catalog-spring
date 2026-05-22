@@ -197,4 +197,22 @@ public class OrderServiceImpl implements OrderService {
 
         return saved;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> findAll() {
+        return orderRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> findAllByStatus(OrderStatus status) {
+        return orderRepository.findByStatus(status);
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(Long id) {
+        orderRepository.deleteById(id);
+    }
 }

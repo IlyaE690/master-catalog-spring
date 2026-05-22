@@ -32,7 +32,7 @@
                     </#if>
                     <#if auth.authorities?seq_contains("ROLE_ADMIN")>
                         <li class="nav-item">
-                            <a class="nav-link" href="/admin">Админка</a>
+                            <a class="nav-link" href="/admin">Админ-панель</a>
                         </li>
                     </#if>
                 </#if>

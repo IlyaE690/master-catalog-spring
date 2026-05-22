@@ -20,6 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByRoleOrderByRatingDesc(Role role);
 
+    List<User> findByRole(Role role);
+
     // Поиск мастеров по специализации
     @Query("SELECT u FROM User u JOIN u.specializations s WHERE s = :specialization AND u.role = 'MASTER'")
     List<User> findAllMastersBySpecialization(@Param("specialization") Specialization specialization);

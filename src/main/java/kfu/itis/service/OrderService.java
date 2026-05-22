@@ -41,4 +41,10 @@ public interface OrderService {
     Order complete(Long orderId);
 
     Order cancel(Long orderId);
+
+    List<Order> findAll();
+
+    List<Order> findAllByStatus(OrderStatus status);
+
+    void deleteById(Long id);
 }

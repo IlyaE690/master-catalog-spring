@@ -24,6 +24,8 @@ public interface OrderRepository extends JpaRepository<Order, Long>, CustomOrder
 
     long countByMasterAndStatus(User master, OrderStatus status);
 
+    List<Order> findByStatus(OrderStatus status);
+
     // Новые заказы для мастера по его специализациям
     @Query("SELECT o FROM Order o WHERE o.status = 'NEW' AND o.specialization IN " +
             "(SELECT s FROM User u JOIN u.specializations s WHERE u.id = :masterId) " +

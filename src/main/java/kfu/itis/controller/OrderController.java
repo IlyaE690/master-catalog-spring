@@ -28,10 +28,12 @@ public class OrderController {
     private final SpecializationService specializationService;
     private final CurrencyService currencyService;
     private final ImageStorageService imageStorageService;
+
     @Value("${app.yandex.maps-api-key:}")
     private String yandexMapsApiKey;
 
-    public OrderController(OrderService orderService,  UserService userService, SpecializationService specializationService,
+    public OrderController(OrderService orderService, UserService userService,
+                           SpecializationService specializationService,
                            CurrencyService currencyService,
                            ImageStorageService imageStorageService) {
         this.orderService = orderService;
@@ -68,7 +70,12 @@ public class OrderController {
         order.setDescription(description);
         order.setAddress(address);
         order.setScheduledDate(scheduledDate);
-        order.setImageUrl(imageStorageService.uploadOrderImage(orderPhoto));
+
+
+        if (orderPhoto != null && !orderPhoto.isEmpty()) {
+            String imageUrl = imageStorageService.uploadOrderImage(orderPhoto);
+            order.setImageUrl(imageUrl);
+        }
 
         orderService.create(order);
         return "redirect:/orders/my";
@@ -89,7 +96,12 @@ public class OrderController {
         model.addAttribute("order", order);
         model.addAttribute("isCustomer", order.getCustomer().getUsername().equals(principal.getName()));
         model.addAttribute("isMaster", order.getMaster() != null && order.getMaster().getUsername().equals(principal.getName()));
-        model.addAttribute("priceInUsd", currencyService.convertRubToUsd(order.getPrice()));
+
+        if (order.getPrice() != null) {
+            model.addAttribute("priceInUsd", currencyService.convertRubToUsd(order.getPrice()));
+        } else {
+            model.addAttribute("priceInUsd", null);
+        }
 
         return "orders/details";
     }
