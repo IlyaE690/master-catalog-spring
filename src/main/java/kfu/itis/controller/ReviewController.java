@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/reviews")
@@ -72,5 +73,25 @@ public class ReviewController {
         reviewService.create(review);
         redirectAttributes.addFlashAttribute("success", "Отзыв успешно оставлен");
         return "redirect:/orders/" + orderId;
+    }
+
+    @GetMapping("/master/{masterId}")
+    public String masterReviews(@PathVariable Long masterId, Model model) {
+        User master = userService.findByIdWithSpecializations(masterId)
+                .orElseThrow(() -> new RuntimeException("Мастер не найден"));
+
+        List<Review> reviews = reviewService.findByTargetUserWithAuthor(master);
+
+        double averageRating = reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+
+        model.addAttribute("master", master);
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("averageRating", averageRating);
+        model.addAttribute("reviewsCount", reviews.size());
+
+        return "reviews/master-reviews";
     }
 }

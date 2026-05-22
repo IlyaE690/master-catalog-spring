@@ -82,4 +82,19 @@ public class ReviewServiceImpl implements ReviewService {
             }
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Review> findByTargetUserWithAuthor(User targetUser) {
+        List<Review> reviews = reviewRepository.findByTargetUserOrderByCreatedAtDesc(targetUser);
+
+        for (Review review : reviews) {
+            if (review.getAuthor() != null) {
+                review.getAuthor().getFirstName();
+                review.getAuthor().getLastName();
+            }
+        }
+
+        return reviews;
+    }
 }

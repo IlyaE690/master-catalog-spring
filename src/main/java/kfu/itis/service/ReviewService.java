@@ -20,4 +20,6 @@ public interface ReviewService {
     List<Review> findAll();
 
     void deleteById(Long id);
+
+    List<Review> findByTargetUserWithAuthor(User targetUser);
 }

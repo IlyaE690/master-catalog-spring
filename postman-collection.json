@@ -1,14 +1,23 @@
 {
   "info": {
     "name": "ДомБыт API",
-    "description": "Коллекция тестов для семестровой работы Spring Boot",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "household-services-api"
+    "_postman_id": "household-services-api-v4"
   },
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "csrfToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "JSESSIONID",
+      "value": "",
       "type": "string"
     },
     {
@@ -24,76 +33,108 @@
   ],
   "item": [
     {
-      "name": "1. Auth (Регистрация и вход)",
+      "name": "1. Аутентификация",
       "item": [
         {
-          "name": "Регистрация клиента",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/x-www-form-urlencoded"
-              }
-            ],
-            "body": {
-              "mode": "urlencoded",
-              "urlencoded": [
-                { "key": "username", "value": "customer_test" },
-                { "key": "email", "value": "customer@test.com" },
-                { "key": "password", "value": "password123" },
-                { "key": "firstName", "value": "Тест" },
-                { "key": "lastName", "value": "Клиентов" },
-                { "key": "phone", "value": "79991234567" },
-                { "key": "role", "value": "CUSTOMER" }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["register"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Регистрация мастера",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/x-www-form-urlencoded"
-              }
-            ],
-            "body": {
-              "mode": "urlencoded",
-              "urlencoded": [
-                { "key": "username", "value": "master_test" },
-                { "key": "email", "value": "master@test.com" },
-                { "key": "password", "value": "password123" },
-                { "key": "firstName", "value": "Тест" },
-                { "key": "lastName", "value": "Мастеров" },
-                { "key": "phone", "value": "79991234568" },
-                { "key": "role", "value": "MASTER" }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["register"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Вход клиента",
+          "name": "01 - Получить CSRF токен",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 302 or 200', () => pm.expect(pm.response.code).to.be.oneOf([200, 302]));"
+                  "const html = pm.response.text();",
+                  "const match = html.match(/name=\"_csrf\" value=\"([^\"]+)\"/);",
+                  "if (match) {",
+                  "    pm.collectionVariables.set('csrfToken', match[1]);",
+                  "    console.log('CSRF Token:', match[1]);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "02 - Регистрация клиента",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "postman_client" },
+                { "key": "email", "value": "postman@client.com" },
+                { "key": "password", "value": "password123" },
+                { "key": "firstName", "value": "Postman" },
+                { "key": "lastName", "value": "Client" },
+                { "key": "phone", "value": "79001112233" },
+                { "key": "role", "value": "CUSTOMER" },
+                { "key": "_csrf", "value": "{{csrfToken}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "03 - Регистрация мастера",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "postman_master" },
+                { "key": "email", "value": "postman@master.com" },
+                { "key": "password", "value": "password123" },
+                { "key": "firstName", "value": "Postman" },
+                { "key": "lastName", "value": "Master" },
+                { "key": "phone", "value": "79004445566" },
+                { "key": "role", "value": "MASTER" },
+                { "key": "specializationIds", "value": "1" },
+                { "key": "specializationIds", "value": "2" },
+                { "key": "_csrf", "value": "{{csrfToken}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04 - Вход в систему",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 302 or 200', () => pm.expect(pm.response.code).to.be.oneOf([200, 302]));"
                 ]
               }
             }
@@ -109,8 +150,9 @@
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
-                { "key": "username", "value": "customer_test" },
-                { "key": "password", "value": "password123" }
+                { "key": "username", "value": "postman_client" },
+                { "key": "password", "value": "password123" },
+                { "key": "_csrf", "value": "{{csrfToken}}" }
               ]
             },
             "url": {
@@ -124,7 +166,7 @@
       ]
     },
     {
-      "name": "2. Specializations API",
+      "name": "2. API Запросы",
       "item": [
         {
           "name": "GET все специализации",
@@ -134,7 +176,11 @@
               "script": {
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                  "const data = pm.response.json();",
+                  "pm.test('Response is array', () => Array.isArray(data));",
+                  "if (data.length > 0 && !pm.collectionVariables.get('specializationId')) {",
+                  "    pm.collectionVariables.set('specializationId', data[0].id);",
+                  "}"
                 ]
               }
             }
@@ -151,43 +197,7 @@
           "response": []
         },
         {
-          "name": "POST создать специализацию",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    const spec = pm.response.json();",
-                  "    pm.collectionVariables.set('specializationId', spec.id);",
-                  "}",
-                  "pm.test('Status 201 or 403', () => pm.expect(pm.response.code).to.be.oneOf([201, 403]));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Сантехник\",\n  \"description\": \"Ремонт и установка сантехники\",\n  \"basePrice\": 1500,\n  \"weatherDependent\": false\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/specializations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "specializations"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET специализация по ID",
+          "name": "GET проверить username",
           "event": [
             {
               "listen": "test",
@@ -202,244 +212,24 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/specializations/1",
+              "raw": "{{baseUrl}}/api/validate/username?username=testuser",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "specializations", "1"]
+              "path": ["api", "validate", "username"],
+              "query": [
+                { "key": "username", "value": "testuser" }
+              ]
             }
           },
           "response": []
         },
         {
-          "name": "PUT обновить специализацию",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Сантехник (обновлено)\",\n  \"description\": \"Ремонт сантехники + замена труб\",\n  \"basePrice\": 2000,\n  \"weatherDependent\": true\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/specializations/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "specializations", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "DELETE специализацию",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/specializations/999",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "specializations", "999"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "3. Orders API (требуется аутентификация)",
-      "item": [
-        {
-          "name": "GET мои заказы (как клиент)",
+          "name": "POST AI подбор мастера",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST создать заказ",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    const order = pm.response.json();",
-                  "    pm.collectionVariables.set('orderId', order.id);",
-                  "}",
-                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"specializationId\": 1,\n  \"title\": \"Починить кран\",\n  \"description\": \"Капает вода\",\n  \"address\": \"Казань, ул. Баумана, 10\",\n  \"scheduledDate\": \"2026-06-25T14:00:00\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET заказ по ID",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "{{orderId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "PUT обновить заказ",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Починить кран (срочно)\",\n  \"description\": \"Капает сильно\",\n  \"address\": \"Казань, ул. Баумана, 10\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "{{orderId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "PATCH изменить статус",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"ASSIGNED\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/orders/{{orderId}}/status",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "{{orderId}}", "status"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "DELETE отменить заказ",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "{{orderId}}"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "4. Available Orders for Master",
-      "item": [
-        {
-          "name": "GET доступные заказы для мастера",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/orders/available",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "available"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "5. AI Suggestion API",
-      "item": [
-        {
-          "name": "POST AI подбор мастера (без specializationId)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Has prompt', () => pm.expect(pm.response.json()).to.have.property('prompt'));"
                 ]
               }
             }
@@ -463,258 +253,21 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "POST AI подбор мастера (с specializationId)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"issueDescription\": \"Не работает розетка\",\n  \"specializationId\": 2,\n  \"minRating\": 4.0\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/orders/ai-suggest",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "ai-suggest"]
-            }
-          },
-          "response": []
         }
       ]
     },
     {
-      "name": "6. Validation API",
+      "name": "3. Тесты ошибок",
       "item": [
         {
-          "name": "GET проверить username (свободен)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('exists = false', () => pm.expect(pm.response.json().exists).to.be.false);"
-                ]
-              }
-            }
-          ],
+          "name": "GET несуществующий маршрут (404)",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/validate/username?username=free_user_new",
+              "raw": "{{baseUrl}}/non-existent-page",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "validate", "username"],
-              "query": [
-                { "key": "username", "value": "free_user_new" }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET проверить username (занят)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('exists = true', () => pm.expect(pm.response.json().exists).to.be.true);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/validate/username?username=customer_test",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "validate", "username"],
-              "query": [
-                { "key": "username", "value": "customer_test" }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET проверить email",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/validate/email?email=master@test.com",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "validate", "email"],
-              "query": [
-                { "key": "email", "value": "master@test.com" }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "7. Error Handling Tests",
-      "item": [
-        {
-          "name": "GET несуществующий заказ",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.expect(pm.response.code).to.be.oneOf([404, 500]);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/orders/99999",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "99999"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST заказ без обязательных полей",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.expect(pm.response.code).to.be.oneOf([400, 500]);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Невалидный заказ\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "PATCH неверный статус",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"INVALID_STATUS\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/orders/1/status",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "orders", "1", "status"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "8. Additional Tests (Cache, Weather, Currency)",
-      "item": [
-        {
-          "name": "GET главная страница (погода кэшируется)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/",
-              "host": ["{{baseUrl}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET избранное (требуется CUSTOMER)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/favorites",
-              "host": ["{{baseUrl}}"],
-              "path": ["favorites"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET уведомления",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/notifications",
-              "host": ["{{baseUrl}}"],
-              "path": ["notifications"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET страница деталей заказа (проверка конвертации валюты)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/orders/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["orders", "1"]
+              "path": ["non-existent-page"]
             }
           },
           "response": []

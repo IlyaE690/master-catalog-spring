@@ -1,9 +1,11 @@
 package kfu.itis.controller;
 
+import kfu.itis.model.entity.Review;
 import kfu.itis.model.entity.Specialization;
 import kfu.itis.model.entity.User;
 import kfu.itis.model.enums.Role;
 import kfu.itis.service.FavoriteMasterService;
+import kfu.itis.service.ReviewService;
 import kfu.itis.service.SpecializationService;
 import kfu.itis.service.UserService;
 import org.springframework.stereotype.Controller;
@@ -23,11 +25,13 @@ public class MasterController {
     private final UserService userService;
     private final SpecializationService specializationService;
     private final FavoriteMasterService  favoriteMasterService;
+    private final ReviewService reviewService;
 
-    public MasterController(UserService userService, SpecializationService specializationService,  FavoriteMasterService favoriteMasterService) {
+    public MasterController(UserService userService, SpecializationService specializationService,  FavoriteMasterService favoriteMasterService,  ReviewService reviewService) {
         this.userService = userService;
         this.specializationService = specializationService;
         this.favoriteMasterService = favoriteMasterService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping
@@ -65,7 +69,12 @@ public class MasterController {
     public String masterDetails(@PathVariable Long id, Model model, Principal principal) {
         User master = userService.findByIdWithSpecializations(id)
                 .orElseThrow(() -> new RuntimeException("user not found"));
+
+        List<Review> reviews = reviewService.findByTargetUserWithAuthor(master);
+
         model.addAttribute("master", master);
+        model.addAttribute("reviews", reviews.stream().limit(3).toList());
+        model.addAttribute("reviewsCount", reviews.size());
 
         if (principal != null) {
             User customer = userService.findByUsername(principal.getName()).orElse(null);
