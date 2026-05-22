@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data.recommendedMasters && data.recommendedMasters.length > 0) {
                     data.recommendedMasters.forEach(master => {
+                        const escapedName = master.fullName.replace(/'/g, "\\'");
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${escapeHtml(master.fullName)}</td>
@@ -114,10 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <td>${escapeHtml(master.specializations.join(', '))}</td>
                             <td>${master.completedOrdersCount} заказов</td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-success" onclick="selectMaster(${master.id}, ${data.specializationId}, '${escapeHtml(master.fullName).replace(/'/g, "\\'")}')">
+                                <button type="button" class="btn btn-sm btn-success" onclick="selectMaster(${master.id}, ${data.specializationId}, '${escapedName}')">
                                     Выбрать
                                 </button>
-                             </td>
+                            </td>
                         `;
                         mastersList.appendChild(row);
                     });

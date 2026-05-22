@@ -5,15 +5,13 @@ import kfu.itis.model.entity.User;
 import kfu.itis.model.enums.Role;
 import kfu.itis.service.FavoriteMasterService;
 import kfu.itis.service.UserService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/favorites")
@@ -38,10 +36,7 @@ public class FavoriteController {
     }
 
     @PostMapping("/add")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> add(@RequestParam Long masterId, Principal principal) {
-        Map<String, Object> response = new HashMap<>();
-
+    public String add(@RequestParam Long masterId, Principal principal, RedirectAttributes redirectAttributes) {
         User customer = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
@@ -49,28 +44,22 @@ public class FavoriteController {
                 .orElseThrow(() -> new RuntimeException("Мастер не найден"));
 
         if (master.getRole() != Role.MASTER) {
-            response.put("success", false);
-            response.put("message", "Некорректный ID мастера");
-            return ResponseEntity.badRequest().body(response);
+            redirectAttributes.addFlashAttribute("error", "Некорректный ID мастера");
+            return "redirect:/masters/" + masterId;
         }
 
         if (favoriteMasterService.isFavorite(customer, master)) {
-            response.put("success", false);
-            response.put("message", "Мастер уже в избранном");
-            return ResponseEntity.ok(response);
+            redirectAttributes.addFlashAttribute("info", "Мастер уже в избранном");
         } else {
             favoriteMasterService.add(customer, master, null);
-            response.put("success", true);
-            response.put("message", "Мастер добавлен в избранное");
-            return ResponseEntity.ok(response);
+            redirectAttributes.addFlashAttribute("success", "Мастер добавлен в избранное");
         }
+
+        return "redirect:/favorites";
     }
 
     @PostMapping("/remove")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> remove(@RequestParam Long masterId, Principal principal) {
-        Map<String, Object> response = new HashMap<>();
-
+    public String remove(@RequestParam Long masterId, Principal principal, RedirectAttributes redirectAttributes) {
         User customer = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
@@ -78,8 +67,7 @@ public class FavoriteController {
                 .orElseThrow(() -> new RuntimeException("Мастер не найден"));
 
         favoriteMasterService.remove(customer, master);
-        response.put("success", true);
-        response.put("message", "Мастер удалён из избранного");
-        return ResponseEntity.ok(response);
+        redirectAttributes.addFlashAttribute("success", "Мастер удалён из избранного");
+        return "redirect:/favorites";
     }
 }

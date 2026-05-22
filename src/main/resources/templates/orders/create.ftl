@@ -18,29 +18,31 @@
                     <option value="${spec.id}">${spec.name} (от ${spec.basePrice} ₽)</option>
                 </#list>
             </select>
+            <div id="specializationError" class="invalid-feedback" style="display:none;">Выберите тип услуги</div>
         </div>
 
         <div class="mb-3">
             <label for="title" class="form-label">Заголовок <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="title" name="title"
-                   placeholder="" required>
+            <input type="text" class="form-control" id="title" name="title" placeholder="Например: Починить кран" required>
+            <div id="titleError" class="invalid-feedback" style="display:none;">Заголовок должен содержать минимум 3 символа</div>
         </div>
 
         <div class="mb-3">
             <label for="description" class="form-label">Описание <span class="text-danger">*</span></label>
-            <textarea class="form-control" id="description" name="description"
-                      rows="4" placeholder="Подробно опишите проблему" required></textarea>
+            <textarea class="form-control" id="description" name="description" rows="4" placeholder="Подробно опишите проблему" required></textarea>
+            <div id="descriptionError" class="invalid-feedback" style="display:none;">Описание должно содержать минимум 5 символов</div>
         </div>
 
         <div class="mb-3">
             <label for="address" class="form-label">Адрес <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="address" name="address"
-                   placeholder="" required>
+            <input type="text" class="form-control" id="address" name="address" placeholder="г. Казань, ул. Баумана, 10" required>
+            <div id="addressError" class="invalid-feedback" style="display:none;">Введите корректный адрес (минимум 5 символов)</div>
         </div>
 
         <div class="mb-3">
             <label for="scheduledDate" class="form-label">Желаемая дата <span class="text-danger">*</span></label>
             <input type="datetime-local" class="form-control" id="scheduledDate" name="scheduledDate" required>
+            <div id="dateError" class="invalid-feedback" style="display:none;">Выберите корректную дату</div>
         </div>
 
         <div class="mb-3">
@@ -60,16 +62,9 @@
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
-                    <tr>
-                        <th>Мастер</th>
-                        <th>Рейтинг</th>
-                        <th>Специализации</th>
-                        <th>Выполнено заказов</th>
-                        <th></th>
-                    </tr>
+                    <tr><th>Мастер</th><th>Рейтинг</th><th>Специализации</th><th>Выполнено заказов</th><th></th></tr>
                     </thead>
-                    <tbody id="aiMastersList">
-                    </tbody>
+                    <tbody id="aiMastersList"></tbody>
                 </table>
             </div>
         </div>

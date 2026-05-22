@@ -1,7 +1,9 @@
 package kfu.itis.service.impl;
 
+import kfu.itis.model.entity.Specialization;
 import kfu.itis.model.entity.User;
 import kfu.itis.model.enums.Role;
+import kfu.itis.repository.SpecializationRepository;
 import kfu.itis.repository.UserRepository;
 import kfu.itis.service.AuthService;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -9,21 +11,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Service
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final SpecializationRepository specializationRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthServiceImpl(UserRepository userRepository, SpecializationRepository specializationRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.specializationRepository = specializationRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     @Transactional
     public User register(String username, String email, String password,
-                         String firstName, String lastName, String phone, Role role) {
+                         String firstName, String lastName, String phone, Role role, Long[] specializationIds) {
         if (role == Role.ADMIN) {
             throw new RuntimeException("Невозможно зарегистрировать администратора");
         }
@@ -49,6 +56,14 @@ public class AuthServiceImpl implements AuthService {
         user.setPhone(phone != null && !phone.trim().isEmpty() ? phone : null);
         user.setRole(role);
         user.setEnabled(true);
+
+        if (role == Role.MASTER && specializationIds != null && specializationIds.length > 0) {
+            Set<Specialization> specializations = new HashSet<>();
+            for (Long id : specializationIds) {
+                specializationRepository.findById(id).ifPresent(specializations::add);
+            }
+            user.setSpecializations(specializations);
+        }
 
         try {
             userRepository.save(user);
