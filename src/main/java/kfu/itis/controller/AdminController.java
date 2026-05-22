@@ -115,6 +115,14 @@ public class AdminController {
         } else {
             orders = orderService.findAll();
         }
+
+        for (Order order : orders) {
+            order.getCustomer().getUsername();
+            if (order.getMaster() != null) {
+                order.getMaster().getUsername();
+            }
+        }
+
         model.addAttribute("orders", orders);
         model.addAttribute("statuses", OrderStatus.values());
         return "admin/orders";

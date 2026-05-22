@@ -15,17 +15,6 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <form method="get" class="d-flex gap-2">
-                <select name="role" class="form-select" onchange="this.form.submit()">
-                    <option value="">Все роли</option>
-                    <#list roles as r>
-                        <option value="${r}" <#if selectedRole?? && selectedRole == r>selected</#if>>${r}</option>
-                    </#list>
-                </select>
-                <a href="/admin/users" class="btn btn-secondary">Сбросить</a>
-            </form>
-        </div>
-        <div class="col-md-4">
-            <form method="get" class="d-flex gap-2">
                 <input type="text" name="search" class="form-control" placeholder="Поиск по имени, логину" value="${search!}">
                 <button type="submit" class="btn btn-primary">Найти</button>
             </form>

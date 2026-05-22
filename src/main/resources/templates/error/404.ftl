@@ -1,5 +1,5 @@
 <#import "../layout/base.ftl" as layout>
-<@layout.page title="404 - Не найдено">
+<@layout.page title="404 - Страница не найдена">
 
     <div class="text-center py-5">
         <h1 class="display-1 text-muted">404</h1>

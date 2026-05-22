@@ -26,24 +26,24 @@
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
-            <tr>
-                <th>ID</th>
-                <th>Заголовок</th>
-                <th>Клиент</th>
-                <th>Мастер</th>
-                <th>Специализация</th>
-                <th>Статус</th>
-                <th>Цена</th>
-                <th>Дата</th>
-                <th>Действия</th>
-            </tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Заголовок</th>
+                    <th>Клиент</th>
+                    <th>Мастер</th>
+                    <th>Специализация</th>
+                    <th>Статус</th>
+                    <th>Цена</th>
+                    <th>Дата</th>
+                    <th>Действия</th>
+                </tr>
             </thead>
             <tbody>
             <#list orders as order>
                 <tr>
                     <td>${order.id}</td>
                     <td>${order.title}</td>
-                    <td>${order.customer.username}</td>
+                    <td>${order.customer.username}</#if></td>
                     <td><#if order.master??>${order.master.username}<#else>-</#if></td>
                     <td>${order.specialization.name}</td>
                     <td>
@@ -56,7 +56,7 @@
                             </select>
                             <button type="submit" class="btn btn-sm btn-outline-primary">Изменить</button>
                         </form>
-                    </td>
+                      </td>
                     <td>${order.price?then(order.price, '-')}</td>
                     <td>${order.formattedScheduledDate!''}</td>
                     <td>
@@ -65,7 +65,7 @@
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
                         </form>
-                    </td>
+                      </td>
                 </tr>
             </#list>
             </tbody>

@@ -33,36 +33,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <h5 class="card-title">Заказы</h5>
-                    <p class="card-text display-4">${totalOrders!0}</p>
-                    <a href="/admin/orders" class="text-white">Управлять →</a>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <div class="row mt-3">
-        <div class="col-md-4 mb-3">
-            <div class="card text-white bg-danger">
-                <div class="card-body">
-                    <h5 class="card-title">Новые заказы</h5>
-                    <p class="card-text display-4">${pendingOrders!0}</p>
-                    <a href="/admin/orders?status=NEW" class="text-white">Смотреть →</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-white bg-secondary">
-                <div class="card-body">
-                    <h5 class="card-title">Отзывы</h5>
-                    <p class="card-text display-4">${totalReviews!0}</p>
-                    <a href="/admin/reviews" class="text-white">Модерировать →</a>
-                </div>
-            </div>
-        </div>
-    </div>
 
 </@layout.page>

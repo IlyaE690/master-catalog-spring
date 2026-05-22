@@ -42,6 +42,8 @@ public interface OrderService {
 
     Order cancel(Long orderId);
 
+    Order reject(Long orderId);
+
     List<Order> findAll();
 
     List<Order> findAllByStatus(OrderStatus status);
@@ -49,6 +51,4 @@ public interface OrderService {
     void deleteById(Long id);
 
     Optional<Order> findByIdWithDetails(Long id);
-
-    Order reject(Long orderId);
 }

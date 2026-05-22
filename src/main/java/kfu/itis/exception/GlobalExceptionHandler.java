@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.Map;
 
@@ -23,6 +24,22 @@ public class GlobalExceptionHandler {
                 (accept != null && accept.contains("application/json"));
     }
 
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public Object handleNotFound(NoHandlerFoundException ex, HttpServletRequest request) {
+        log.warn("Страница не найдена: {}", ex.getRequestURL());
+
+        if (isAjax(request)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Страница не найдена"));
+        }
+
+        ModelAndView mav = new ModelAndView("error/404");
+        mav.addObject("status", 404);
+        mav.addObject("message", "Страница не найдена");
+        return mav;
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public Object handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
         log.error("Ошибка: {}", ex.getMessage(), ex);
@@ -34,7 +51,7 @@ public class GlobalExceptionHandler {
         }
 
         ModelAndView mav = new ModelAndView("error/500");
-        mav.addObject("message", "Внутренняя ошибка сервера");
+        mav.addObject("message", "Внутренняя ошибка сервера: " + ex.getMessage());
         mav.addObject("status", 500);
         return mav;
     }

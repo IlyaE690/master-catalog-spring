@@ -167,13 +167,23 @@ public class OrderController {
         model.addAttribute("order", order);
         model.addAttribute("scheduledDateStr", order.getScheduledDate() != null ? order.getScheduledDate().format(formatter) : "");
         model.addAttribute("createdAtStr", order.getCreatedAt() != null ? order.getCreatedAt().format(formatter) : "");
-        model.addAttribute("isCustomer", order.getCustomer().getUsername().equals(principal.getName()));
-        model.addAttribute("isMaster", order.getMaster() != null && order.getMaster().getUsername().equals(principal.getName()));
+        model.addAttribute("completedAtStr", order.getCompletedAt() != null ? order.getCompletedAt().format(formatter) : "");
+
+        if (principal != null) {
+            String currentUsername = principal.getName();
+            boolean isCustomer = order.getCustomer().getUsername().equals(currentUsername);
+            boolean isMaster = order.getMaster() != null && order.getMaster().getUsername().equals(currentUsername);
+
+            model.addAttribute("isCustomer", isCustomer);
+            model.addAttribute("isMaster", isMaster);
+            System.out.println("DEBUG: isCustomer=" + isCustomer + ", isMaster=" + isMaster);
+        } else {
+            model.addAttribute("isCustomer", false);
+            model.addAttribute("isMaster", false);
+        }
 
         if (order.getPrice() != null) {
             model.addAttribute("priceInUsd", currencyService.convertRubToUsd(order.getPrice()));
-        } else {
-            model.addAttribute("priceInUsd", null);
         }
 
         return "orders/details";
@@ -256,6 +266,6 @@ public class OrderController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/orders/assigned";
+        return "redirect:/orders/available";
     }
 }

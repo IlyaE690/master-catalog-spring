@@ -13,30 +13,28 @@ public class CustomErrorController implements ErrorController {
 
     @RequestMapping("/error")
     public String handleError(HttpServletRequest request, Model model) {
-        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+        Object statusCode = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
 
-        if (status != null) {
-            int statusCode = Integer.parseInt(status.toString());
+        if (statusCode != null) {
+            int status = Integer.parseInt(statusCode.toString());
 
-            model.addAttribute("status", statusCode);
-
-            if (statusCode == HttpStatus.NOT_FOUND.value()) {
+            if (status == HttpStatus.NOT_FOUND.value()) {
+                model.addAttribute("status", 404);
                 model.addAttribute("message", "Страница не найдена");
                 return "error/404";
-            } else if (statusCode == HttpStatus.FORBIDDEN.value()) {
+            } else if (status == HttpStatus.FORBIDDEN.value()) {
+                model.addAttribute("status", 403);
                 model.addAttribute("message", "Доступ запрещен");
                 return "error/403";
-            } else if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+            } else if (status == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+                model.addAttribute("status", 500);
                 model.addAttribute("message", "Внутренняя ошибка сервера");
                 return "error/500";
             }
         }
 
-        model.addAttribute("status", "???");
-        model.addAttribute("message", "Неизвестная ошибка");
-
-        return "error/error";
+        model.addAttribute("status", 500);
+        model.addAttribute("message", "Произошла непредвиденная ошибка");
+        return "error/500";
     }
-
-
 }
