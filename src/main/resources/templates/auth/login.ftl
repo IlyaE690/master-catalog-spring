@@ -10,6 +10,8 @@
             </#if>
 
             <form method="post" action="/login">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+
                 <div class="mb-3">
                     <label for="username" class="form-label">Логин</label>
                     <input type="text" class="form-control" id="username" name="username" required>

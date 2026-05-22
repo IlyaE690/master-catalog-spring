@@ -1,5 +1,5 @@
-<footer class="bg-light text-center text-muted py-3 mt-5 border-top">
-    <div class="container">
+<footer class="footer mt-auto py-3 bg-light border-top">
+    <div class="container text-center text-muted">
         &copy; ДомБыт — Сервис бытовых услуг
     </div>
 </footer>

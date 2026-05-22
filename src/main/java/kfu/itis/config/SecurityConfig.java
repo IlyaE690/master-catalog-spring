@@ -8,6 +8,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -21,15 +22,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityWebFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/orders/ai-suggest"))
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers("/api/orders/ai-suggest")
+                )
                 .headers(headers -> headers
-                                .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                        "default-src 'self'; " +
-                                                "script-src 'self' https://cdn.jsdelivr.net https://api-maps.yandex.ru; " +
-                                                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
-                                                "img-src 'self' data: https:; " +
-                                                "connect-src 'self'; frame-ancestors 'none';"
-                                ))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self'; " +
+                                        "script-src 'self' https://cdn.jsdelivr.net https://api-maps.yandex.ru; " +
+                                        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+                                        "img-src 'self' data: https:; " +
+                                        "connect-src 'self'; frame-ancestors 'none';"
+                        ))
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -43,7 +47,8 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/webjars/**",
-                                "/error"
+                                "/error",
+                                "/favicon.ico"
                         ).permitAll()
                         .requestMatchers(
                                 "/orders/new",
@@ -76,12 +81,13 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
                         .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
+                        .deleteCookies("JSESSIONID", "XSRF-TOKEN")
                         .permitAll()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
+                        .maxSessionsPreventsLogin(false)
                         .expiredUrl("/login?expired")
                 );
 
