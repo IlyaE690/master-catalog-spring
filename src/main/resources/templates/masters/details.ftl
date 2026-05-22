@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col-md-8">
             <h2>${master.firstName!} ${master.lastName!}</h2>
-            <p>Рейтинг: ${master.rating}</p>
+            <p>Рейтинг: ${master.rating} ★</p>
             <p>Телефон: ${master.phone!}</p>
             <p>Email: ${master.email}</p>
 
@@ -19,25 +19,28 @@
                 </#if>
             </ul>
 
-            <#if Session.SPRING_SECURITY_CONTEXT??>
-                <#assign auth = Session.SPRING_SECURITY_CONTEXT.authentication>
-                <#if auth.authorities?seq_contains("ROLE_CUSTOMER")>
-                    <#if isFavorite?? && isFavorite == true>
-                        <form method="post" action="/favorites/remove" style="display: inline;">
-                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                            <input type="hidden" name="masterId" value="${master.id}"/>
-                            <button type="submit" class="btn btn-outline-danger btn-sm">Удалить из избранного</button>
-                        </form>
-                    <#else>
-                        <form method="post" action="/favorites/add" style="display: inline;">
-                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                            <input type="hidden" name="masterId" value="${master.id}"/>
-                            <button type="submit" class="btn btn-outline-danger btn-sm">В избранное</button>
-                        </form>
+            <div class="mt-3">
+                <#if Session.SPRING_SECURITY_CONTEXT??>
+                    <#assign auth = Session.SPRING_SECURITY_CONTEXT.authentication>
+                    <#if auth.authorities?seq_contains("ROLE_CUSTOMER")>
+                        <a href="/orders/create-for-master/${master.id}" class="btn btn-primary">Заказать у этого мастера</a>
+
+                        <#if isFavorite?? && isFavorite == true>
+                            <form method="post" action="/favorites/remove" style="display: inline;">
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                <input type="hidden" name="masterId" value="${master.id}"/>
+                                <button type="submit" class="btn btn-outline-danger">Удалить из избранного</button>
+                            </form>
+                        <#else>
+                            <form method="post" action="/favorites/add" style="display: inline;">
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                <input type="hidden" name="masterId" value="${master.id}"/>
+                                <button type="submit" class="btn btn-outline-primary">В избранное</button>
+                            </form>
+                        </#if>
                     </#if>
-                    <a href="/orders/new" class="btn btn-primary btn-sm">Создать заказ</a>
                 </#if>
-            </#if>
+            </div>
         </div>
     </div>
 

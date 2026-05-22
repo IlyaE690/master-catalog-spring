@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -41,16 +42,27 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public String users(@RequestParam(required = false) String role, Model model) {
+    public String users(@RequestParam(required = false) String role,
+                        @RequestParam(required = false) String search,
+                        Model model) {
         List<User> users;
-        if (role != null && !role.isEmpty()) {
+
+        if (search != null && !search.isEmpty()) {
+            users = userService.findAll().stream()
+                    .filter(u -> u.getUsername().toLowerCase().contains(search.toLowerCase()) ||
+                            (u.getFirstName() != null && u.getFirstName().toLowerCase().contains(search.toLowerCase())) ||
+                            (u.getLastName() != null && u.getLastName().toLowerCase().contains(search.toLowerCase())))
+                    .collect(Collectors.toList());
+        } else if (role != null && !role.isEmpty()) {
             users = userService.findAllByRole(Role.valueOf(role));
-            model.addAttribute("selectedRole", role);
         } else {
             users = userService.findAll();
         }
+
         model.addAttribute("users", users);
         model.addAttribute("roles", Role.values());
+        model.addAttribute("selectedRole", role);
+        model.addAttribute("search", search);
         return "admin/users";
     }
 
@@ -75,10 +87,22 @@ public class AdminController {
 
     @PostMapping("/users/{id}/delete")
     public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        User user = userService.findById(id).orElseThrow();
-        String username = user.getUsername();
-        userService.deleteById(id);
-        redirectAttributes.addFlashAttribute("success", "Пользователь '" + username + "' удалён");
+        try {
+            User user = userService.findById(id).orElseThrow();
+            String username = user.getUsername();
+
+            for (Order order : orderService.findByCustomer(user)) {
+                orderService.deleteById(order.getId());
+            }
+            for (Order order : orderService.findByMaster(user)) {
+                orderService.deleteById(order.getId());
+            }
+
+            userService.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "Пользователь '" + username + "' удалён");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Не удалось удалить пользователя: " + e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
@@ -100,27 +124,8 @@ public class AdminController {
     public String changeOrderStatus(@PathVariable Long id, @RequestParam OrderStatus status,
                                     RedirectAttributes redirectAttributes) {
         Order order = orderService.findById(id).orElseThrow();
-
-        switch (status) {
-            case ASSIGNED:
-                order.setStatus(OrderStatus.ASSIGNED);
-                orderService.update(order);
-                break;
-            case IN_PROGRESS:
-                order.setStatus(OrderStatus.IN_PROGRESS);
-                orderService.update(order);
-                break;
-            case COMPLETED:
-                orderService.complete(id);
-                break;
-            case CANCELLED:
-                orderService.cancel(id);
-                break;
-            default:
-                order.setStatus(status);
-                orderService.update(order);
-        }
-
+        order.setStatus(status);
+        orderService.update(order);
         redirectAttributes.addFlashAttribute("success", "Статус заказа #" + id + " изменён на " + status);
         return "redirect:/admin/orders";
     }

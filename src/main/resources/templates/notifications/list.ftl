@@ -21,7 +21,7 @@
                         <div>
                             <strong>${notification.title}</strong>
                             <p class="mb-1">${notification.message!''}</p>
-                            <small class="text-muted">${notification.createdAt?string("dd.MM.yyyy HH:mm")}</small>
+                            <small class="text-muted">${notification.formattedCreatedAt!''}</small>
                         </div>
                         <#if !notification.isRead>
                             <button class="btn btn-sm btn-outline-success" onclick="markRead(${notification.id})">

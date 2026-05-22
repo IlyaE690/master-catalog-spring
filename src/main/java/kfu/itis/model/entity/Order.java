@@ -7,6 +7,7 @@ import lombok.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Entity
@@ -73,6 +74,21 @@ public class Order implements Serializable {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+
+    public String getFormattedScheduledDate() {
+        if (scheduledDate == null) return "";
+        return scheduledDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+    }
+
+    public String getFormattedCreatedAt() {
+        if (createdAt == null) return "";
+        return createdAt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+    }
+
+    public String getFormattedCompletedAt() {
+        if (completedAt == null) return "";
+        return completedAt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
     }
 
     @Override

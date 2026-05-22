@@ -39,12 +39,13 @@ public interface OrderRepository extends JpaRepository<Order, Long>, CustomOrder
 
     @Query("SELECT o FROM Order o " +
             "LEFT JOIN FETCH o.specialization " +
+            "LEFT JOIN FETCH o.customer " +
+            "LEFT JOIN FETCH o.master " +
             "WHERE o.status = 'NEW' AND o.specialization IN " +
             "(SELECT s FROM User u JOIN u.specializations s WHERE u.id = :masterId) " +
             "ORDER BY o.createdAt DESC")
     List<Order> findNewOrdersForMaster(@Param("masterId") Long masterId);
 
-    // Мастера с чеком выше среднего (премиум-мастера)
     @Query("SELECT DISTINCT o.master FROM Order o " +
             "WHERE o.master IS NOT NULL " +
             "GROUP BY o.master " +

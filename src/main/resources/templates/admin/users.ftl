@@ -3,31 +3,47 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Пользователи</h2>
-        <form method="get" class="d-flex gap-2">
-            <select name="role" class="form-select w-auto" onchange="this.form.submit()">
-                <option value="">Все роли</option>
-                <#list roles as r>
-                    <option value="${r}" <#if selectedRole?? && selectedRole == r>selected</#if>>${r}</option>
-                </#list>
-            </select>
-            <a href="/admin/users" class="btn btn-secondary">Сбросить</a>
-        </form>
     </div>
 
     <#if success??>
         <div class="alert alert-success">${success}</div>
     </#if>
+    <#if error??>
+        <div class="alert alert-danger">${error}</div>
+    </#if>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <form method="get" class="d-flex gap-2">
+                <select name="role" class="form-select" onchange="this.form.submit()">
+                    <option value="">Все роли</option>
+                    <#list roles as r>
+                        <option value="${r}" <#if selectedRole?? && selectedRole == r>selected</#if>>${r}</option>
+                    </#list>
+                </select>
+                <a href="/admin/users" class="btn btn-secondary">Сбросить</a>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="search" class="form-control" placeholder="Поиск по имени, логину" value="${search!}">
+                <button type="submit" class="btn btn-primary">Найти</button>
+            </form>
+        </div>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
             <tr>
                 <th>ID</th>
-                <th>Имя пользователя</th>
+                <th>Логин</th>
                 <th>Email</th>
                 <th>Имя</th>
                 <th>Фамилия</th>
+                <th>Телефон</th>
                 <th>Роль</th>
+                <th>Рейтинг</th>
                 <th>Статус</th>
                 <th>Действия</th>
             </tr>
@@ -40,6 +56,7 @@
                     <td>${user.email}</td>
                     <td>${user.firstName!'-'}</td>
                     <td>${user.lastName!'-'}</td>
+                    <td>${user.phone!'-'}</td>
                     <td>
                         <form method="post" action="/admin/users/${user.id}/role" style="display: inline;">
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -51,6 +68,7 @@
                             <button type="submit" class="btn btn-sm btn-outline-primary">✔</button>
                         </form>
                     </td>
+                    <td>${user.rating} ★</td>
                     <td>
                         <span class="badge ${user.enabled?then('bg-success', 'bg-danger')}">
                             ${user.enabled?then('Активен', 'Заблокирован')}

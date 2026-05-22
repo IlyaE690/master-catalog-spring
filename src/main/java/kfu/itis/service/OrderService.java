@@ -49,4 +49,6 @@ public interface OrderService {
     void deleteById(Long id);
 
     Optional<Order> findByIdWithDetails(Long id);
+
+    Order reject(Long orderId);
 }

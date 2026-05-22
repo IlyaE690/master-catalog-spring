@@ -51,6 +51,18 @@ public class OrderController {
         return "orders/create";
     }
 
+    @GetMapping("/create-for-master/{masterId}")
+    public String createOrderForMaster(@PathVariable Long masterId, Model model, Principal principal) {
+        User master = userService.findById(masterId)
+                .orElseThrow(() -> new RuntimeException("Мастер не найден"));
+
+        model.addAttribute("targetMasterId", masterId);
+        model.addAttribute("targetMasterName", (master.getFirstName() != null ? master.getFirstName() : "") + " " + (master.getLastName() != null ? master.getLastName() : ""));
+        model.addAttribute("specializations", specializationService.findAll());
+        model.addAttribute("yandexApiKey", yandexMapsApiKey);
+        return "orders/create-for-master";
+    }
+
     @PostMapping("/create-with-master")
     public String createOrderWithMaster(@RequestParam Long specializationId,
                                         @RequestParam Long masterId,
@@ -61,6 +73,11 @@ public class OrderController {
                                         @RequestParam(required = false) MultipartFile orderPhoto,
                                         Principal principal,
                                         RedirectAttributes redirectAttributes) {
+
+        if (scheduledDate.isBefore(LocalDateTime.now())) {
+            redirectAttributes.addFlashAttribute("error", "Дата выполнения не может быть в прошлом");
+            return "redirect:/orders/create-for-master/" + masterId;
+        }
 
         User customer = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
@@ -107,26 +124,6 @@ public class OrderController {
             return "redirect:/orders/new";
         }
 
-        if (address == null || address.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Адрес обязателен для заполнения");
-            return "redirect:/orders/new";
-        }
-
-        if (address.trim().length() < 5) {
-            redirectAttributes.addFlashAttribute("error", "Введите корректный адрес (минимум 5 символов)");
-            return "redirect:/orders/new";
-        }
-
-        if (title == null || title.trim().length() < 3) {
-            redirectAttributes.addFlashAttribute("error", "Заголовок должен содержать минимум 3 символа");
-            return "redirect:/orders/new";
-        }
-
-        if (description == null || description.trim().length() < 5) {
-            redirectAttributes.addFlashAttribute("error", "Описание должно содержать минимум 5 символов");
-            return "redirect:/orders/new";
-        }
-
         User customer = userService.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
@@ -136,9 +133,9 @@ public class OrderController {
         Order order = new Order();
         order.setCustomer(customer);
         order.setSpecialization(specialization);
-        order.setTitle(title.trim());
-        order.setDescription(description.trim());
-        order.setAddress(address.trim());
+        order.setTitle(title);
+        order.setDescription(description);
+        order.setAddress(address);
         order.setScheduledDate(scheduledDate);
 
         if (orderPhoto != null && !orderPhoto.isEmpty()) {
@@ -240,5 +237,25 @@ public class OrderController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/orders/my";
+    }
+
+    @PostMapping("/{id}/reject")
+    public String rejectOrder(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        try {
+            User master = userService.findByUsername(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+            Order order = orderService.findById(id).orElseThrow();
+
+            if (order.getMaster() == null || !order.getMaster().getId().equals(master.getId())) {
+                redirectAttributes.addFlashAttribute("error", "Вы не можете отказаться от этого заказа");
+                return "redirect:/orders/assigned";
+            }
+
+            orderService.reject(id);
+            redirectAttributes.addFlashAttribute("success", "Вы отказались от заказа");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/orders/assigned";
     }
 }

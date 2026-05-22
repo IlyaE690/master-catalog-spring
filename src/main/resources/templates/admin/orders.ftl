@@ -1,82 +1,75 @@
 <#import "../layout/base.ftl" as layout>
-<@layout.page title="Создать заказ">
+<@layout.page title="Управление заказами">
 
-    <h2>Создать заказ</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Заказы</h2>
+    </div>
 
-    <#if error??>
-        <div class="alert alert-danger">${error}</div>
+    <#if success??>
+        <div class="alert alert-success">${success}</div>
     </#if>
 
-    <form method="post" action="/orders/new" enctype="multipart/form-data" id="orderForm">
-        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-
-        <div class="mb-3">
-            <label for="specializationId" class="form-label">Тип услуги</label>
-            <select class="form-select" id="specializationId" name="specializationId" required>
-                <option value="">Выберите...</option>
-                <#list specializations as spec>
-                    <option value="${spec.id}">${spec.name} (от ${spec.basePrice} ₽)</option>
-                </#list>
-            </select>
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <form method="get" class="d-flex gap-2">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">Все статусы</option>
+                    <#list statuses as s>
+                        <option value="${s}" <#if selectedStatus?? && selectedStatus == s>selected</#if>>${s}</option>
+                    </#list>
+                </select>
+                <a href="/admin/orders" class="btn btn-secondary">Сбросить</a>
+            </form>
         </div>
+    </div>
 
-        <div class="mb-3">
-            <label for="title" class="form-label">Заголовок</label>
-            <input type="text" class="form-control" id="title" name="title"
-                   placeholder="Починить слив в ванной" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="description" class="form-label">Описание</label>
-            <textarea class="form-control" id="description" name="description"
-                      rows="4" placeholder="Подробно опишите проблему" required></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label for="address" class="form-label">Адрес</label>
-            <input type="text" class="form-control" id="address" name="address"
-                   placeholder="г. Казань, ул. Баумана, 10, кв. 42" required>
-            <small class="text-muted">Формат: город, улица, дом, квартира</small>
-        </div>
-
-        <div class="mb-3">
-            <label for="scheduledDate" class="form-label">Желаемая дата</label>
-            <input type="datetime-local" class="form-control" id="scheduledDate" name="scheduledDate" required>
-            <small class="text-muted">Дата не может быть раньше текущего момента</small>
-        </div>
-
-        <div class="mb-3">
-            <label for="minRating" class="form-label">Минимальный рейтинг мастера</label>
-            <select class="form-select" id="minRating" name="minRating">
-                <option value="">Не важно</option>
-                <option value="4.0">От 4.0</option>
-                <option value="4.5">От 4.5</option>
-                <option value="4.8">От 4.8</option>
-            </select>
-        </div>
-
-        <button type="button" id="aiSuggestBtn" class="btn btn-outline-secondary mb-3">Подобрать мастера с ИИ</button>
-        <div id="aiBox" class="alert alert-secondary" style="display:none;">
-            <p><strong>Сформированный промпт для ИИ:</strong></p>
-            <pre id="aiPrompt"></pre>
-            <p class="mt-2"><strong>Подходящие мастера:</strong></p>
-            <ul id="aiMasters"></ul>
-        </div>
-
-        <div class="mb-3">
-            <label for="orderPhoto" class="form-label">Фото проблемы (опционально)</label>
-            <input type="file" class="form-control" id="orderPhoto" name="orderPhoto" accept="image/*">
-        </div>
-
-        <button type="submit" class="btn btn-primary">Создать заказ</button>
-    </form>
-
-    <div id="order-map" class="mt-3"></div>
-    <small class="text-muted">Карта по адресу заказа (Yandex Maps API)</small>
-
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=${yandexApiKey!""}"></script>
-    <script src="/js/order-map.js"></script>
-    <script src="/js/ai-order.js"></script>
-    <script src="/js/create-order.js"></script>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Заголовок</th>
+                <th>Клиент</th>
+                <th>Мастер</th>
+                <th>Специализация</th>
+                <th>Статус</th>
+                <th>Цена</th>
+                <th>Дата</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <#list orders as order>
+                <tr>
+                    <td>${order.id}</td>
+                    <td>${order.title}</td>
+                    <td>${order.customer.username}</td>
+                    <td><#if order.master??>${order.master.username}<#else>-</#if></td>
+                    <td>${order.specialization.name}</td>
+                    <td>
+                        <form method="post" action="/admin/orders/${order.id}/status" style="display: inline;">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                            <select name="status" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                                <#list statuses as s>
+                                    <option value="${s}" <#if order.status == s>selected</#if>>${s}</option>
+                                </#list>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Изменить</button>
+                        </form>
+                    </td>
+                    <td>${order.price?then(order.price, '-')}</td>
+                    <td>${order.formattedScheduledDate!''}</td>
+                    <td>
+                        <form method="post" action="/admin/orders/${order.id}/delete" style="display: inline;"
+                              onsubmit="return confirm('Удалить заказ #${order.id}?')">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            </#list>
+            </tbody>
+        </table>
+    </div>
 
 </@layout.page>

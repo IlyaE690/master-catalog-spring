@@ -12,7 +12,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <strong>${order.title}</strong>
-                            <br><small>${order.specialization.name} | ${order.address}</small>
+                            <br><small>${order.specialization.name} | ${order.address} | ${order.formattedScheduledDate!''}</small>
                         </div>
                         <form method="post" action="/orders/${order.id}/accept">
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>

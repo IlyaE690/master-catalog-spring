@@ -56,6 +56,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPhone(phone != null && !phone.trim().isEmpty() ? phone : null);
         user.setRole(role);
         user.setEnabled(true);
+        user.setRating(0.0);
 
         if (role == Role.MASTER && specializationIds != null && specializationIds.length > 0) {
             Set<Specialization> specializations = new HashSet<>();
@@ -66,13 +67,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
-            userRepository.save(user);
+            return userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
             if (e.getMessage().contains("users_phone_key")) {
                 throw new RuntimeException("Аккаунт с таким телефоном уже существует");
             }
             throw new RuntimeException("Ошибка при регистрации: " + e.getMessage());
         }
-        return user;
     }
 }

@@ -11,7 +11,11 @@
             <#list orders as order>
                 <a href="/orders/${order.id}" class="list-group-item list-group-item-action">
                     <div class="d-flex justify-content-between">
-                        <strong>${order.title}</strong>
+                        <div>
+                            <strong>${order.title}</strong>
+                            <br>
+                            <small>${order.specialization.name} | ${order.formattedCreatedAt!''}</small>
+                        </div>
                         <span class="badge
                             <#if order.status == 'NEW'>bg-info</#if>
                             <#if order.status == 'ASSIGNED'>bg-warning</#if>
@@ -22,12 +26,6 @@
                             ${order.status}
                         </span>
                     </div>
-                    <small class="text-muted">
-                        ${order.specialization.name}
-                        <#if order.createdAt??>
-                            | ${order.createdAt}
-                        </#if>
-                    </small>
                 </a>
             </#list>
         </div>

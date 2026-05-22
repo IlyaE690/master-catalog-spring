@@ -61,6 +61,9 @@ public class SecurityConfig {
                                 "/api/orders/available"
                         ).hasAnyRole("CUSTOMER", "MASTER", "ADMIN")
                         .requestMatchers(
+                                "/master/specializations"
+                        ).hasAnyRole("MASTER", "ADMIN")
+                        .requestMatchers(
                                 "/orders/available",
                                 "/orders/assigned",
                                 "/orders/{id}/accept",

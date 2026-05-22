@@ -87,10 +87,3 @@ server:
     whitelabel:
       enabled: false
 
-admin:
-  username: ${ADMIN_USERNAME:admin}
-  email: ${ADMIN_EMAIL:admin@household.ru}
-  password: ${ADMIN_PASSWORD:admin123}
-  first-name: ${ADMIN_FIRST_NAME:Админ}
-  last-name: ${ADMIN_LAST_NAME:Системный}
-  phone: ${ADMIN_PHONE:+70000000001}

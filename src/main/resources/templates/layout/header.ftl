@@ -42,6 +42,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/notifications">Уведомления</a>
                     </li>
+                    <li class="nav-item" id="chooseSpecializationLi" style="display: none;">
+                        <a class="nav-link text-warning" href="/master/specializations">⚠️ Выбрать специализацию</a>
+                    </li>
                     <li class="nav-item">
                         <form method="post" action="/logout" style="display: inline;">
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -62,3 +65,19 @@
         </div>
     </div>
 </nav>
+
+<script>
+    <#if Session.SPRING_SECURITY_CONTEXT??>
+    <#assign auth = Session.SPRING_SECURITY_CONTEXT.authentication>
+    <#if auth.authorities?seq_contains("ROLE_MASTER")>
+    fetch('/master/check')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.hasSpecializations) {
+                document.getElementById('chooseSpecializationLi').style.display = 'block';
+            }
+        })
+        .catch(err => console.log(err));
+    </#if>
+    </#if>
+</script>

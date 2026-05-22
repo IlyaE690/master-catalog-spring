@@ -30,13 +30,13 @@ public class OrderServiceImpl implements OrderService {
         this.weatherService = weatherService;
     }
 
-    private void createNotification(User user, String title, String message, Long orderId) {
+    private void createNotification(User user, String title, String message, Long orderId, NotificationType type) {
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setTitle(title);
         notification.setMessage(message);
         notification.setRelatedOrderId(orderId);
-        notification.setType(NotificationType.STATUS_CHANGED);
+        notification.setType(type);
         notificationService.create(notification);
     }
 
@@ -122,7 +122,28 @@ public class OrderServiceImpl implements OrderService {
     public Order create(Order order) {
         order.setStatus(OrderStatus.NEW);
         recalculatePrice(order);
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        if (order.getMaster() == null) {
+            List<Order> availableOrders = orderRepository.findNewOrdersForMaster(order.getSpecialization().getId());
+            for (Order availableOrder : availableOrders) {
+                if (availableOrder.getMaster() == null) {
+                    createNotification(availableOrder.getCustomer(),
+                            "Новый заказ",
+                            "Создан новый заказ: " + order.getTitle(),
+                            order.getId(),
+                            NotificationType.ORDER_CREATED);
+                }
+            }
+        } else {
+            createNotification(order.getMaster(),
+                    "Новый заказ",
+                    "Вам назначен новый заказ: " + order.getTitle(),
+                    order.getId(),
+                    NotificationType.ORDER_CREATED);
+        }
+
+        return saved;
     }
 
     @Override
@@ -144,8 +165,16 @@ public class OrderServiceImpl implements OrderService {
 
         createNotification(order.getCustomer(),
                 "Мастер назначен",
-                "Мастер " + master.getFirstName() + " " + master.getLastName() + " принял ваш заказ <<" + order.getTitle() + ">>",
-                order.getId());
+                "Мастер " + master.getFirstName() + " " + master.getLastName() + " принял ваш заказ",
+                order.getId(),
+                NotificationType.MASTER_ASSIGNED);
+
+        createNotification(master,
+                "Заказ принят",
+                "Вы приняли заказ: " + order.getTitle(),
+                order.getId(),
+                NotificationType.MASTER_ASSIGNED);
+
         return saved;
     }
 
@@ -157,12 +186,11 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.IN_PROGRESS);
         Order saved = orderRepository.save(order);
 
-        createNotification(
-                order.getCustomer(),
-                "Мастер начал работу",
-                "Мастер приступил к выполнению заказа <<" + order.getTitle() + ">>",
-                order.getId()
-        );
+        createNotification(order.getCustomer(),
+                "Работа начата",
+                "Мастер приступил к выполнению заказа",
+                order.getId(),
+                NotificationType.STATUS_CHANGED);
 
         return saved;
     }
@@ -176,12 +204,11 @@ public class OrderServiceImpl implements OrderService {
         order.setCompletedAt(LocalDateTime.now());
         Order saved = orderRepository.save(order);
 
-        createNotification(
-                order.getCustomer(),
+        createNotification(order.getCustomer(),
                 "Заказ выполнен",
-                "Мастер завершил выполнение заказа «" + order.getTitle() + "». Оставьте отзыв!",
-                order.getId()
-        );
+                "Мастер завершил выполнение заказа. Оставьте отзыв!",
+                order.getId(),
+                NotificationType.STATUS_CHANGED);
 
         return saved;
     }
@@ -195,13 +222,36 @@ public class OrderServiceImpl implements OrderService {
         Order saved = orderRepository.save(order);
 
         if (order.getMaster() != null) {
-            createNotification(
-                    order.getMaster(),
+            createNotification(order.getMaster(),
                     "Заказ отменён",
-                    "Заказчик отменил заказ «" + order.getTitle() + "»",
-                    order.getId()
-            );
+                    "Заказчик отменил заказ",
+                    order.getId(),
+                    NotificationType.STATUS_CHANGED);
         }
+
+        createNotification(order.getCustomer(),
+                "Заказ отменён",
+                "Вы отменили заказ",
+                order.getId(),
+                NotificationType.STATUS_CHANGED);
+
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public Order reject(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Заказ не найден: " + orderId));
+        order.setStatus(OrderStatus.NEW);
+        order.setMaster(null);
+        Order saved = orderRepository.save(order);
+
+        createNotification(order.getCustomer(),
+                "Мастер отказался",
+                "Мастер отказался от выполнения заказа. Заказ снова доступен другим мастерам.",
+                order.getId(),
+                NotificationType.STATUS_CHANGED);
 
         return saved;
     }

@@ -1,6 +1,6 @@
 package kfu.itis.controller;
 
-import kfu.itis.model.entity.Specialization;
+import kfu.itis.model.entity.User;
 import kfu.itis.model.enums.Role;
 import kfu.itis.service.AuthService;
 import kfu.itis.service.SpecializationService;
@@ -30,21 +30,17 @@ public class AuthController {
         if (error != null) {
             model.addAttribute("error", "Неверный логин или пароль");
         }
-
         if (expired != null) {
             model.addAttribute("error", "Войдите снова");
         }
-
         if (registered != null) {
             model.addAttribute("registered", true);
         }
-
         return "auth/login";
     }
 
     @GetMapping("/register")
     public String registerForm(Model model) {
-        model.addAttribute("roles", new Role[]{Role.CUSTOMER, Role.MASTER});
         model.addAttribute("specializations", specializationService.findAll());
         return "auth/register";
     }
@@ -57,31 +53,29 @@ public class AuthController {
                            @RequestParam(required = false) String lastName,
                            @RequestParam(required = false) String phone,
                            @RequestParam Role role,
-                           @RequestParam(required = false) Long[] specializations,
+                           @RequestParam(required = false) Long[] specializationIds,
                            RedirectAttributes redirectAttributes,
                            Model model) {
+
+        model.addAttribute("specializations", specializationService.findAll());
+        model.addAttribute("username", username);
+        model.addAttribute("email", email);
+        model.addAttribute("firstName", firstName);
+        model.addAttribute("lastName", lastName);
+        model.addAttribute("phone", phone);
+        model.addAttribute("role", role);
+
         if (role == Role.ADMIN) {
             model.addAttribute("error", "Некорректная роль");
-            model.addAttribute("roles", new Role[]{Role.CUSTOMER, Role.MASTER});
-            model.addAttribute("specializations", specializationService.findAll());
-            return "auth/register";
-        }
-
-        if (role == Role.MASTER && (specializations == null || specializations.length == 0)) {
-            model.addAttribute("error", "Для регистрации как мастер выберите хотя бы одну специализацию");
-            model.addAttribute("roles", new Role[]{Role.CUSTOMER, Role.MASTER});
-            model.addAttribute("specializations", specializationService.findAll());
             return "auth/register";
         }
 
         try {
-            authService.register(username, email, password, firstName, lastName, phone, role, specializations);
+            authService.register(username, email, password, firstName, lastName, phone, role, specializationIds);
             redirectAttributes.addAttribute("registered", true);
             return "redirect:/login";
         } catch (RuntimeException e) {
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("roles", new Role[]{Role.CUSTOMER, Role.MASTER});
-            model.addAttribute("specializations", specializationService.findAll());
             return "auth/register";
         }
     }
