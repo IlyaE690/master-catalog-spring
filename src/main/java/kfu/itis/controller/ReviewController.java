@@ -30,7 +30,7 @@ public class ReviewController {
 
     @GetMapping("/create/{orderId}")
     public String reviewForm(@PathVariable Long orderId, Model model) {
-        Order order = orderService.findById(orderId).orElseThrow();
+        Order order = orderService.getOrderWithDetailsForReview(orderId);
         model.addAttribute("order", order);
         return "reviews/create";
     }

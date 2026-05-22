@@ -276,4 +276,21 @@ public class OrderServiceImpl implements OrderService {
     public Optional<Order> findByIdWithDetails(Long id) {
         return orderRepository.findByIdWithDetails(id);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Order getOrderWithDetailsForReview(Long orderId) {
+        Order order = orderRepository.findByIdWithDetails(orderId)
+                .orElseThrow(() -> new RuntimeException("Заказ не найден"));
+
+        if (order.getMaster() != null) {
+            order.getMaster().getFirstName();
+            order.getMaster().getLastName();
+        }
+        if (order.getSpecialization() != null) {
+            order.getSpecialization().getName();
+        }
+
+        return order;
+    }
 }

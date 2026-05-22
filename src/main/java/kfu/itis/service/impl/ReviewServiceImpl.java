@@ -45,7 +45,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public Review create(Review review) {
         Review saved = reviewRepository.save(review);
-        updateMasterRating(review.getTargetUser());
+
+        User master = userRepository.findById(review.getTargetUser().getId())
+                .orElseThrow(() -> new RuntimeException("Мастер не найден"));
+        updateMasterRating(master);
+
         return saved;
     }
 
@@ -70,9 +74,12 @@ public class ReviewServiceImpl implements ReviewService {
     public void deleteById(Long id) {
         Review review = reviewRepository.findById(id).orElse(null);
         if (review != null) {
-            User master = review.getTargetUser();
+            User master = userRepository.findById(review.getTargetUser().getId())
+                    .orElse(null);
             reviewRepository.deleteById(id);
-            updateMasterRating(master);
+            if (master != null) {
+                updateMasterRating(master);
+            }
         }
     }
 }
