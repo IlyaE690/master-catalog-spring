@@ -23,18 +23,18 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/orders/ai-suggest"))
                 .headers(headers -> headers
-                        .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'self'; " +
-                                        "script-src 'self' https://cdn.jsdelivr.net https://api-maps.yandex.ru; " +
-                                        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
-                                        "img-src 'self' data: https:; " +
-                                        "connect-src 'self'; frame-ancestors 'none';"
-                        ))
-                        .xssProtection(x -> x.disable())
+                                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                        "default-src 'self'; " +
+                                                "script-src 'self' https://cdn.jsdelivr.net https://api-maps.yandex.ru; " +
+                                                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+                                                "img-src 'self' data: https:; " +
+                                                "connect-src 'self'; frame-ancestors 'none';"
+                                ))
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
+                                "/login",
                                 "/register",
                                 "/masters",
                                 "/masters/**",
@@ -65,9 +65,11 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
+                        .loginProcessingUrl("/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
