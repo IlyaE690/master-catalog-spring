@@ -56,6 +56,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, CustomOrder
             "LEFT JOIN FETCH o.customer " +
             "LEFT JOIN FETCH o.master " +
             "LEFT JOIN FETCH o.specialization " +
+            "LEFT JOIN FETCH o.review " +
             "WHERE o.id = :id")
     Optional<Order> findByIdWithDetails(@Param("id") Long id);
 }

@@ -9,6 +9,8 @@ import kfu.itis.service.ImageStorageService;
 import kfu.itis.service.OrderService;
 import kfu.itis.service.SpecializationService;
 import kfu.itis.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +25,8 @@ import java.security.Principal;
 @Controller
 @RequestMapping("/orders")
 public class OrderController {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
 
     private final OrderService orderService;
     private final UserService userService;
@@ -137,6 +141,7 @@ public class OrderController {
         order.setDescription(description);
         order.setAddress(address);
         order.setScheduledDate(scheduledDate);
+        order.setStatus(OrderStatus.NEW);
 
         if (orderPhoto != null && !orderPhoto.isEmpty()) {
             String imageUrl = imageStorageService.uploadOrderImage(orderPhoto);
@@ -169,18 +174,19 @@ public class OrderController {
         model.addAttribute("createdAtStr", order.getCreatedAt() != null ? order.getCreatedAt().format(formatter) : "");
         model.addAttribute("completedAtStr", order.getCompletedAt() != null ? order.getCompletedAt().format(formatter) : "");
 
+        boolean isCustomer = false;
+        boolean isMaster = false;
+
         if (principal != null) {
             String currentUsername = principal.getName();
-            boolean isCustomer = order.getCustomer().getUsername().equals(currentUsername);
-            boolean isMaster = order.getMaster() != null && order.getMaster().getUsername().equals(currentUsername);
-
-            model.addAttribute("isCustomer", isCustomer);
-            model.addAttribute("isMaster", isMaster);
-            System.out.println("DEBUG: isCustomer=" + isCustomer + ", isMaster=" + isMaster);
-        } else {
-            model.addAttribute("isCustomer", false);
-            model.addAttribute("isMaster", false);
+            isCustomer = order.getCustomer().getUsername().equals(currentUsername);
+            isMaster = order.getMaster() != null && order.getMaster().getUsername().equals(currentUsername);
         }
+
+        model.addAttribute("isCustomer", isCustomer);
+        model.addAttribute("isMaster", isMaster);
+
+        log.debug("Order {} - isCustomer: {}, isMaster: {}", id, isCustomer, isMaster);
 
         if (order.getPrice() != null) {
             model.addAttribute("priceInUsd", currencyService.convertRubToUsd(order.getPrice()));
@@ -199,12 +205,18 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/accept")
-    public String acceptOrder(@PathVariable Long id, Principal principal) {
-        User master = userService.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+    public String acceptOrder(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        try {
+            User master = userService.findByUsername(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
-        orderService.assignMaster(id, master);
-        return "redirect:/orders/assigned";
+            Order order = orderService.assignMaster(id, master);
+            redirectAttributes.addFlashAttribute("success", "Вы приняли заказ!");
+            return "redirect:/orders/" + id;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/orders/available";
+        }
     }
 
     @GetMapping("/assigned")

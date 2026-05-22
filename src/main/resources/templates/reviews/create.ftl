@@ -2,8 +2,16 @@
 <@layout.page title="Оставить отзыв">
 
     <h2>Оставить отзыв о заказе #${order.id}</h2>
-    <p><strong>Мастер:</strong> ${order.master.firstName!} ${order.master.lastName!}</p>
-    <p><strong>Услуга:</strong> ${order.specialization.name}</p>
+
+    <#if order.master??>
+        <#assign masterFirstName = order.master.firstName!>
+        <#assign masterLastName = order.master.lastName!>
+        <p><strong>Мастер:</strong> ${masterFirstName} ${masterLastName}</p>
+    <#else>
+        <p><strong>Мастер:</strong> Не назначен</p>
+    </#if>
+
+    <p><strong>Услуга:</strong> ${order.specialization.name!}</p>
 
     <form method="post" action="/reviews/create/${order.id}">
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>

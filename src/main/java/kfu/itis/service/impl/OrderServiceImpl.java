@@ -120,28 +120,25 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Order create(Order order) {
-        order.setStatus(OrderStatus.NEW);
+        if (order.getStatus() == null) {
+            order.setStatus(OrderStatus.NEW);
+        }
         recalculatePrice(order);
         Order saved = orderRepository.save(order);
 
-        if (order.getMaster() == null) {
-            List<Order> availableOrders = orderRepository.findNewOrdersForMaster(order.getSpecialization().getId());
-            for (Order availableOrder : availableOrders) {
-                if (availableOrder.getMaster() == null) {
-                    createNotification(availableOrder.getCustomer(),
-                            "Новый заказ",
-                            "Создан новый заказ: " + order.getTitle(),
-                            order.getId(),
-                            NotificationType.ORDER_CREATED);
-                }
-            }
-        } else {
+        if (order.getMaster() != null) {
             createNotification(order.getMaster(),
                     "Новый заказ",
                     "Вам назначен новый заказ: " + order.getTitle(),
                     order.getId(),
                     NotificationType.ORDER_CREATED);
         }
+
+        createNotification(order.getCustomer(),
+                "Заказ создан",
+                "Ваш заказ #" + order.getId() + " успешно создан",
+                order.getId(),
+                NotificationType.ORDER_CREATED);
 
         return saved;
     }
