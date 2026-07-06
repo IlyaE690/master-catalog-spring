@@ -1,8 +1,8 @@
 package kfu.itis.service;
 
-import kfu.itis.model.dto.AiSuggestionResponseDto;
+import kfu.itis.model.dto.SuggestionResponseDto;
 
-public interface AiOrderSuggestionService {
-    AiSuggestionResponseDto buildSuggestion(String issueDescription, Double minRating);
-    AiSuggestionResponseDto buildSuggestion(String issueDescription, Long specializationId, Double minRating);
+public interface OrderSuggestionService {
+    SuggestionResponseDto buildSuggestion(String issueDescription, Double minRating);
+    SuggestionResponseDto buildSuggestion(String issueDescription, Long specializationId, Double minRating);
 }

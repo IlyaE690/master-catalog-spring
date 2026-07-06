@@ -1,7 +1,7 @@
 package kfu.itis.controller.api;
 
-import kfu.itis.model.dto.AiSuggestionResponseDto;
-import kfu.itis.service.AiOrderSuggestionService;
+import kfu.itis.model.dto.SuggestionResponseDto;
+import kfu.itis.service.OrderSuggestionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,23 +9,23 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
-public class AiSuggestionController {
+public class SuggestionController {
 
-    private final AiOrderSuggestionService aiOrderSuggestionService;
+    private final OrderSuggestionService aiOrderSuggestionService;
 
-    public AiSuggestionController(AiOrderSuggestionService aiOrderSuggestionService) {
+    public SuggestionController(OrderSuggestionService aiOrderSuggestionService) {
         this.aiOrderSuggestionService = aiOrderSuggestionService;
     }
 
     @PostMapping("/ai-suggest")
-    public ResponseEntity<AiSuggestionResponseDto> suggest(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<SuggestionResponseDto> suggest(@RequestBody Map<String, Object> body) {
         String issueDescription = body.getOrDefault("issueDescription", "").toString();
         Long specializationId = body.get("specializationId") == null || body.get("specializationId").toString().isBlank()
                 ? null
                 : Long.valueOf(body.get("specializationId").toString());
         Double minRating = body.get("minRating") == null ? null : Double.valueOf(body.get("minRating").toString());
 
-        AiSuggestionResponseDto suggestion = specializationId == null
+        SuggestionResponseDto suggestion = specializationId == null
                 ? aiOrderSuggestionService.buildSuggestion(issueDescription, minRating)
                 : aiOrderSuggestionService.buildSuggestion(issueDescription, specializationId, minRating);
         return ResponseEntity.ok(suggestion);

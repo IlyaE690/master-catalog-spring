@@ -2,7 +2,7 @@ package kfu.itis.model.dto;
 
 import java.util.List;
 
-public record AiSuggestionResponseDto(
+public record SuggestionResponseDto(
         Long specializationId,
         String specializationName,
         List<RecommendedMasterDto> recommendedMasters

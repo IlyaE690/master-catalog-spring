@@ -1,10 +1,10 @@
 package kfu.itis.service.impl;
 
-import kfu.itis.model.dto.AiSuggestionResponseDto;
+import kfu.itis.model.dto.SuggestionResponseDto;
 import kfu.itis.model.dto.RecommendedMasterDto;
 import kfu.itis.model.entity.Specialization;
 import kfu.itis.model.entity.User;
-import kfu.itis.service.AiOrderSuggestionService;
+import kfu.itis.service.OrderSuggestionService;
 import kfu.itis.service.OrderService;
 import kfu.itis.service.SpecializationService;
 import kfu.itis.service.UserService;
@@ -18,15 +18,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class AiOrderSuggestionServiceImpl implements AiOrderSuggestionService {
+public class OrderSuggestionServiceImpl implements OrderSuggestionService {
 
     private final UserService userService;
     private final SpecializationService specializationService;
     private final OrderService orderService;
 
-    public AiOrderSuggestionServiceImpl(UserService userService,
-                                        SpecializationService specializationService,
-                                        OrderService orderService) {
+    public OrderSuggestionServiceImpl(UserService userService,
+                                      SpecializationService specializationService,
+                                      OrderService orderService) {
         this.userService = userService;
         this.specializationService = specializationService;
         this.orderService = orderService;
@@ -34,7 +34,7 @@ public class AiOrderSuggestionServiceImpl implements AiOrderSuggestionService {
 
     @Override
     @Transactional(readOnly = true)
-    public AiSuggestionResponseDto buildSuggestion(String issueDescription, Double minRating) {
+    public SuggestionResponseDto buildSuggestion(String issueDescription, Double minRating) {
         Specialization specialization = inferSpecializationByDescription(issueDescription)
                 .orElseThrow(() -> new RuntimeException("Не удалось определить специализацию по описанию"));
         return buildSuggestion(issueDescription, specialization.getId(), minRating);
@@ -42,7 +42,7 @@ public class AiOrderSuggestionServiceImpl implements AiOrderSuggestionService {
 
     @Override
     @Transactional(readOnly = true)
-    public AiSuggestionResponseDto buildSuggestion(String issueDescription, Long specializationId, Double minRating) {
+    public SuggestionResponseDto buildSuggestion(String issueDescription, Long specializationId, Double minRating) {
         Specialization specialization = specializationService.findById(specializationId)
                 .orElseThrow(() -> new RuntimeException("Специализация не найдена"));
 
@@ -65,7 +65,7 @@ public class AiOrderSuggestionServiceImpl implements AiOrderSuggestionService {
                 ))
                 .toList();
 
-        return new AiSuggestionResponseDto(
+        return new SuggestionResponseDto(
                 specialization.getId(),
                 specialization.getName(),
                 recommendedMasters

@@ -85,7 +85,7 @@
 
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=${yandexApiKey!""}"></script>
     <script src="/js/order-map.js"></script>
-    <script src="/js/ai-order.js"></script>
+    <script src="/js/sug-order.js"></script>
     <script src="/js/create-order.js"></script>
 
 </@layout.page>
