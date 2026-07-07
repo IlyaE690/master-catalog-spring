@@ -1,1 +1,21 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/H1ghQbib)
+ДомБыт — это веб-платформа для поиска и заказа специалистов по бытовым услугам. Проект представляет собой многофункциональную систему, объединяющую заказчиков и мастеров в единой экосистеме.
+
+Ключевые возможности:
+
+* Регистрация и аутентификация пользователей с разделением ролей (Заказчик, Мастер, Администратор)
+* Создание и управление заказами с привязкой к специализациям
+* Интеллектуальный подбор мастеров на основе описания заказа
+* Система рейтингов и отзывов для оценки качества работы мастеров
+* Отправка уведомлений в реальном времени с помощью WebSocket
+* Избранное — сохранение понравившихся мастеров
+* Поддержка различных валют
+* Административная панель для управления пользователями
+
+Backend: Java, Spring Boot 3.4.4, Spring Web, Spring Data JPA, Spring Security, Spring WebSocket,
+Spring Session, Spring Cache, Hibernate, PostgreSQL, Redis, Flyway, Lombok, Cloudinary, OpenAPI Generator, Gradle
+
+Frontend: FreeMarker, Bootstrap, JavaScript, STOMP
+
+CI/CD: Docker
+
+Внешние API: Open-Meteo API, ЦБ РФ API, Cloudinary API
